@@ -32,21 +32,21 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col md:flex-row antialiased">
 
-  <!-- PANTALLA DE LOGIN / REGISTRO -->
+  <!-- PANTALLA DE ACCESO / REGISTRO DIRECCIONADO -->
   <div id="auth-screen" class="fixed inset-0 z-[100] bg-slate-950 flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-md w-full shadow-2xl space-y-6">
       <div class="text-center space-y-2">
         <div class="inline-flex bg-gradient-to-tr from-emerald-600 to-teal-400 text-slate-950 p-3 rounded-2xl shadow-lg shadow-emerald-500/20 mb-2">
           <i class="fa-solid fa-chart-line text-2xl font-black"></i>
         </div>
-        <h2 id="auth-title" class="text-xl font-bold text-slate-100">Iniciar Sesión en FinanzasPro</h2>
-        <p id="auth-subtitle" class="text-xs text-slate-400">Ingresa tus credenciales para acceder a tu plataforma</p>
+        <h2 id="auth-title" class="text-xl font-bold text-slate-100">Acceso a FinanzasPro</h2>
+        <p id="auth-subtitle" class="text-xs text-slate-400">Ingresa tus datos para iniciar o crear tu perfil local</p>
       </div>
 
       <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
-        <div id="group-auth-name" class="hidden">
-          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">Nombre Completo</label>
-          <input type="text" id="auth-name" placeholder="Ej: Juan Robles" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 transition">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">Tu Nombre</label>
+          <input type="text" id="auth-name" required placeholder="Ej: Juan Robles" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 transition">
         </div>
         <div>
           <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">Correo Electrónico</label>
@@ -58,15 +58,9 @@
         </div>
 
         <button type="submit" id="auth-btn" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-emerald-600/20">
-          Entrar al Sistema
+          Ingresar al Panel
         </button>
       </form>
-
-      <div class="text-center pt-2 border-t border-slate-800">
-        <button type="button" onclick="toggleAuthMode()" id="auth-switch-btn" class="text-xs text-emerald-400 hover:underline font-medium">
-          ¿No tienes cuenta? Regístrate aquí
-        </button>
-      </div>
     </div>
   </div>
 
@@ -79,7 +73,7 @@
         </div>
         <div>
           <h1 class="text-base font-bold text-slate-100 tracking-tight">FinanzasPro</h1>
-          <p class="text-[10px] text-slate-400 font-medium">Platform v2.5</p>
+          <p class="text-[10px] text-slate-400 font-medium">v2.5 Enterprise</p>
         </div>
       </div>
 
@@ -113,7 +107,7 @@
         </div>
       </div>
       <button onclick="logout()" class="w-full py-2 text-xs font-semibold bg-slate-800 hover:bg-rose-900/30 text-rose-400 border border-slate-700 hover:border-rose-800 rounded-xl transition flex items-center justify-center gap-2">
-        <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
+        <i class="fa-solid fa-right-from-bracket"></i> Salir
       </button>
     </div>
   </aside>
@@ -327,4 +321,396 @@
           <input type="date" id="form-fecha" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
         </div>
         <div>
-          <label class="block text-[11px] font-semibold text-slate-40
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">Monto ($)</label>
+          <input type="number" step="0.01" id="form-monto" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+        </div>
+        <div id="group-subtipo" class="hidden">
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">Tipo de Pasivo</label>
+          <select id="form-subtipo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+            <option value="financiera">Financiero (Banco / Entidad)</option>
+            <option value="personal">Personal (Tercero / Familiar)</option>
+          </select>
+        </div>
+        <div class="flex justify-end space-x-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl">Cancelar</button>
+          <button type="submit" class="px-4 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-lg shadow-emerald-600/20">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let currentUser = JSON.parse(localStorage.getItem('finanzas_pro_active_user')) || null;
+
+    const now = new Date();
+    let selectedMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    document.getElementById('monthSelector').value = selectedMonth;
+
+    let appData = { ingresos: [], gastos: [], deudas: [] };
+    let chartComp = null, chartDeud = null, chartHist = null;
+
+    function handleAuthSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('auth-name').value;
+      const email = document.getElementById('auth-email').value.toLowerCase().trim();
+      const pass = document.getElementById('auth-pass').value;
+
+      currentUser = { name, email };
+      localStorage.setItem('finanzas_pro_active_user', JSON.stringify(currentUser));
+      initSession();
+    }
+
+    function logout() {
+      localStorage.removeItem('finanzas_pro_active_user');
+      currentUser = null;
+      document.getElementById('auth-screen').classList.remove('hidden');
+    }
+
+    function initSession() {
+      if (!currentUser) {
+        document.getElementById('auth-screen').classList.remove('hidden');
+        return;
+      }
+      document.getElementById('auth-screen').classList.add('hidden');
+      document.getElementById('user-display-name').innerText = currentUser.name || 'Usuario';
+      document.getElementById('user-display-email').innerText = currentUser.email;
+      document.getElementById('user-avatar').innerText = (currentUser.name || 'U').charAt(0).toUpperCase();
+
+      appData = JSON.parse(localStorage.getItem(`finanzas_pro_data_${currentUser.email}`)) || { ingresos: [], gastos: [], deudas: [] };
+      renderApp();
+    }
+
+    function saveData() {
+      if (currentUser) {
+        localStorage.setItem(`finanzas_pro_data_${currentUser.email}`, JSON.stringify(appData));
+      }
+      renderApp();
+    }
+
+    function changeMonth(val) {
+      if (!val) return;
+      selectedMonth = val;
+      renderApp();
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.side-btn').forEach(b => {
+        b.classList.remove('bg-slate-800', 'text-emerald-400');
+        b.classList.add('text-slate-400');
+      });
+      document.getElementById(`side-${tab}`).classList.add('bg-slate-800', 'text-emerald-400');
+      document.getElementById(`side-${tab}`).classList.remove('text-slate-400');
+
+      ['dashboard', 'ingresos', 'gastos', 'deudas', 'historico'].forEach(v => {
+        document.getElementById(`view-${v}`).classList.add('hidden');
+      });
+      document.getElementById(`view-${tab}`).classList.remove('hidden');
+    }
+
+    function openModal(type) {
+      document.getElementById('form-type').value = type;
+      document.getElementById('modal-form').reset();
+      document.getElementById('form-fecha').value = `${selectedMonth}-01`;
+
+      const title = document.getElementById('modal-title');
+      const subtipoGroup = document.getElementById('group-subtipo');
+      const fechaGroup = document.getElementById('group-fecha');
+
+      if (type === 'ingreso') {
+        title.innerText = 'Nuevo Ingreso';
+        subtipoGroup.classList.add('hidden');
+        fechaGroup.classList.remove('hidden');
+      } else if (type === 'gasto') {
+        title.innerText = 'Nuevo Gasto';
+        subtipoGroup.classList.add('hidden');
+        fechaGroup.classList.remove('hidden');
+      } else if (type === 'deuda') {
+        title.innerText = 'Nuevo Pasivo / Deuda';
+        subtipoGroup.classList.remove('hidden');
+        fechaGroup.classList.add('hidden');
+      }
+
+      document.getElementById('modal').classList.remove('hidden');
+      document.getElementById('modal').classList.add('flex');
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.add('hidden');
+      document.getElementById('modal').classList.remove('flex');
+    }
+
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      const type = document.getElementById('form-type').value;
+      const nombre = document.getElementById('form-nombre').value;
+      const categoria = document.getElementById('form-categoria').value || 'General';
+      const monto = parseFloat(document.getElementById('form-monto').value) || 0;
+      const fecha = document.getElementById('form-fecha').value;
+
+      if (type === 'ingreso') {
+        appData.ingresos.push({ id: Date.now(), nombre, categoria, monto, fecha });
+      } else if (type === 'gasto') {
+        appData.gastos.push({ id: Date.now(), nombre, categoria, monto, fecha });
+      } else if (type === 'deuda') {
+        appData.deudas.push({
+          id: Date.now(),
+          nombre,
+          categoria,
+          montoOriginal: monto,
+          saldoPendiente: monto,
+          tipo: document.getElementById('form-subtipo').value
+        });
+      }
+
+      closeModal();
+      saveData();
+    }
+
+    function deleteItem(type, id) {
+      if (confirm('¿Eliminar este registro?')) {
+        appData[type] = appData[type].filter(item => item.id !== id);
+        saveData();
+      }
+    }
+
+    function abonarDeuda(id) {
+      const deuda = appData.deudas.find(d => d.id === id);
+      if (!deuda) return;
+
+      const abonoStr = prompt(`Saldo pendiente de "${deuda.nombre}": $${deuda.saldoPendiente}\nMonto a abonar:`);
+      if (abonoStr) {
+        const abono = parseFloat(abonoStr);
+        if (!isNaN(abono) && abono > 0) {
+          deuda.saldoPendiente = Math.max(0, deuda.saldoPendiente - abono);
+          saveData();
+        }
+      }
+    }
+
+    function formatMoney(val) {
+      return '$' + val.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+
+    function renderApp() {
+      const ingresosMes = appData.ingresos.filter(i => i.fecha && i.fecha.startsWith(selectedMonth));
+      const gastosMes = appData.gastos.filter(g => g.fecha && g.fecha.startsWith(selectedMonth));
+
+      const totalIngresos = ingresosMes.reduce((acc, i) => acc + i.monto, 0);
+      const totalGastos = gastosMes.reduce((acc, g) => acc + g.monto, 0);
+      const balance = totalIngresos - totalGastos;
+      const tasaAhorro = totalIngresos > 0 ? Math.max(0, Math.round((balance / totalIngresos) * 100)) : 0;
+
+      const totalDeudaFin = appData.deudas.filter(d => d.tipo === 'financiera').reduce((acc, d) => acc + d.saldoPendiente, 0);
+      const totalDeudaPer = appData.deudas.filter(d => d.tipo === 'personal').reduce((acc, d) => acc + d.saldoPendiente, 0);
+      const totalDeudas = totalDeudaFin + totalDeudaPer;
+
+      document.getElementById('dash-balance').innerText = formatMoney(balance);
+      document.getElementById('dash-ingresos').innerText = formatMoney(totalIngresos);
+      document.getElementById('dash-gastos').innerText = formatMoney(totalGastos);
+      document.getElementById('dash-tasa-ahorro').innerText = `${tasaAhorro}%`;
+      document.getElementById('dash-deudas').innerText = formatMoney(totalDeudas);
+      document.getElementById('dash-deuda-fin').innerText = formatMoney(totalDeudaFin);
+      document.getElementById('dash-deuda-per').innerText = formatMoney(totalDeudaPer);
+
+      // Tabla Ingresos
+      document.getElementById('list-ingresos').innerHTML = ingresosMes.map(i => `
+        <tr class="hover:bg-slate-800/40">
+          <td class="p-3.5 font-medium text-slate-100">${i.nombre}</td>
+          <td class="p-3.5"><span class="px-2 py-0.5 bg-slate-800 text-[10px] font-semibold rounded-md border border-slate-700">${i.categoria}</span></td>
+          <td class="p-3.5 text-slate-400">${i.fecha}</td>
+          <td class="p-3.5 text-right font-bold text-emerald-400">${formatMoney(i.monto)}</td>
+          <td class="p-3.5 text-center no-print">
+            <button onclick="deleteItem('ingresos', ${i.id})" class="text-slate-500 hover:text-rose-400"><i class="fa-solid fa-trash-can"></i></button>
+          </td>
+        </tr>
+      `).join('') || `<tr><td colspan="5" class="p-4 text-center text-slate-500">Sin ingresos en este periodo</td></tr>`;
+
+      // Tabla Gastos
+      document.getElementById('list-gastos').innerHTML = gastosMes.map(g => `
+        <tr class="hover:bg-slate-800/40">
+          <td class="p-3.5 font-medium text-slate-100">${g.nombre}</td>
+          <td class="p-3.5"><span class="px-2 py-0.5 bg-slate-800 text-[10px] font-semibold rounded-md border border-slate-700">${g.categoria}</span></td>
+          <td class="p-3.5 text-slate-400">${g.fecha}</td>
+          <td class="p-3.5 text-right font-bold text-rose-400">${formatMoney(g.monto)}</td>
+          <td class="p-3.5 text-center no-print">
+            <button onclick="deleteItem('gastos', ${g.id})" class="text-slate-500 hover:text-rose-400"><i class="fa-solid fa-trash-can"></i></button>
+          </td>
+        </tr>
+      `).join('') || `<tr><td colspan="5" class="p-4 text-center text-slate-500">Sin gastos en este periodo</td></tr>`;
+
+      // Cards Deudas
+      const renderDeudaCard = (d) => {
+        const pct = Math.min(100, Math.round(((d.montoOriginal - d.saldoPendiente) / d.montoOriginal) * 100));
+        return `
+          <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-3 print-card">
+            <div class="flex justify-between items-start">
+              <div>
+                <h4 class="font-bold text-slate-200 text-xs">${d.nombre}</h4>
+                <span class="text-[10px] text-slate-400">${d.categoria}</span>
+              </div>
+              <button onclick="deleteItem('deudas', ${d.id})" class="text-slate-600 hover:text-rose-400 text-xs no-print"><i class="fa-solid fa-trash"></i></button>
+            </div>
+            <div class="space-y-1">
+              <div class="flex justify-between text-xs">
+                <span class="text-slate-400">Saldo Pendiente:</span>
+                <span class="font-bold text-amber-400">${formatMoney(d.saldoPendiente)}</span>
+              </div>
+              <div class="flex justify-between text-xs">
+                <span class="text-slate-400">Monto Inicial:</span>
+                <span class="text-slate-300">${formatMoney(d.montoOriginal)}</span>
+              </div>
+            </div>
+            <div class="space-y-1">
+              <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden border border-slate-700">
+                <div class="bg-emerald-500 h-full" style="width: ${pct}%"></div>
+              </div>
+              <div class="text-right text-[10px] text-slate-400 font-medium">${pct}% amortizado</div>
+            </div>
+            <button onclick="abonarDeuda(${d.id})" class="w-full py-1.5 text-xs bg-slate-800 hover:bg-slate-750 text-slate-200 rounded-lg transition font-medium border border-slate-700 no-print">
+              Registrar Abono
+            </button>
+          </div>
+        `;
+      };
+
+      document.getElementById('list-deudas-fin').innerHTML = appData.deudas.filter(d => d.tipo === 'financiera').map(renderDeudaCard).join('') || `<p class="text-xs text-slate-500">Sin pasivos financieros</p>`;
+      document.getElementById('list-deudas-per').innerHTML = appData.deudas.filter(d => d.tipo === 'personal').map(renderDeudaCard).join('') || `<p class="text-xs text-slate-500">Sin pasivos personales</p>`;
+
+      renderCharts(totalIngresos, totalGastos, totalDeudaFin, totalDeudaPer);
+      renderHistorico();
+    }
+
+    function renderCharts(ing, gas, dFin, dPer) {
+      if (chartComp) chartComp.destroy();
+      if (chartDeud) chartDeud.destroy();
+
+      const ctxComp = document.getElementById('chartComparison').getContext('2d');
+      chartComp = new Chart(ctxComp, {
+        type: 'bar',
+        data: {
+          labels: ['Ingresos', 'Gastos'],
+          datasets: [{
+            data: [ing, gas],
+            backgroundColor: ['#10b981', '#f43f5e'],
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: '#1e293b' } },
+            x: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { display: false } }
+          }
+        }
+      });
+
+      const ctxDeud = document.getElementById('chartDeudas').getContext('2d');
+      chartDeud = new Chart(ctxDeud, {
+        type: 'doughnut',
+        data: {
+          labels: ['Pasivo Financiero', 'Pasivo Personal'],
+          datasets: [{
+            data: [dFin, dPer],
+            backgroundColor: ['#f59e0b', '#6366f1'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } }
+        }
+      });
+    }
+
+    function renderHistorico() {
+      const mesesSet = new Set();
+      appData.ingresos.forEach(i => i.fecha && mesesSet.add(i.fecha.slice(0, 7)));
+      appData.gastos.forEach(g => g.fecha && mesesSet.add(g.fecha.slice(0, 7)));
+      const mesesList = Array.from(mesesSet).sort();
+
+      const dataIngresos = [];
+      const dataGastos = [];
+
+      const rowsHTML = mesesList.map(m => {
+        const ing = appData.ingresos.filter(i => i.fecha && i.fecha.startsWith(m)).reduce((a, b) => a + b.monto, 0);
+        const gas = appData.gastos.filter(g => g.fecha && g.fecha.startsWith(m)).reduce((a, b) => a + b.monto, 0);
+        const bal = ing - gas;
+
+        dataIngresos.push(ing);
+        dataGastos.push(gas);
+
+        return `
+          <tr class="hover:bg-slate-800/40">
+            <td class="p-3.5 font-bold text-slate-100">${m}</td>
+            <td class="p-3.5 text-right font-semibold text-emerald-400">${formatMoney(ing)}</td>
+            <td class="p-3.5 text-right font-semibold text-rose-400">${formatMoney(gas)}</td>
+            <td class="p-3.5 text-right font-bold ${bal >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${formatMoney(bal)}</td>
+            <td class="p-3.5 text-center no-print">
+              <button onclick="selectAndGo('${m}')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-750 text-[11px] font-semibold rounded-lg text-slate-300 border border-slate-700">Ir al mes</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      document.getElementById('list-historico').innerHTML = rowsHTML || `<tr><td colspan="5" class="p-4 text-center text-slate-500">Sin historial registrado</td></tr>`;
+
+      if (chartHist) chartHist.destroy();
+      const ctxHist = document.getElementById('chartHistory').getContext('2d');
+      chartHist = new Chart(ctxHist, {
+        type: 'line',
+        data: {
+          labels: mesesList,
+          datasets: [
+            { label: 'Ingresos', data: dataIngresos, borderColor: '#10b981', backgroundColor: '#10b98115', fill: true, tension: 0.3 },
+            { label: 'Gastos', data: dataGastos, borderColor: '#f43f5e', backgroundColor: '#f43f5e15', fill: true, tension: 0.3 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } },
+          scales: {
+            y: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: '#1e293b' } },
+            x: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: '#1e293b' } }
+          }
+        }
+      });
+    }
+
+    function selectAndGo(m) {
+      document.getElementById('monthSelector').value = m;
+      changeMonth(m);
+      switchTab('dashboard');
+    }
+
+    function exportData() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `finanzas_pro_${currentUser ? currentUser.email : 'backup'}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function importData(event) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          appData = JSON.parse(e.target.result);
+          saveData();
+          alert('Base de datos restaurada correctamente.');
+        } catch (err) {
+          alert('Archivo de datos inválido.');
+        }
+      };
+      reader.readAsText(event.target.files[0]);
+    }
+
+    initSession();
+  </script>
+</body>
+</html>
