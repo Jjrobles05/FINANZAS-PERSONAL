@@ -1,0 +1,17 @@
+{
+  "name": "FinanzasPro SaaS",
+  "short_name": "FinanzasPro",
+  "description": "Control de Finanzas Personales y Empresariales",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#080d1a",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2953/2953361.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
