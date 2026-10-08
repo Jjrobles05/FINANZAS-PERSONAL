@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FinanzasPro - Turso DB Real</title>
+  <title>FinanzasPro - Turso Enterprise</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -50,14 +50,20 @@
         <button onclick="switchTab('gastos')" id="side-gastos" class="side-btn w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 flex items-center gap-3">
           <i class="fa-solid fa-arrow-trend-down text-rose-400 w-4"></i> Control Gastos
         </button>
+        <button onclick="switchTab('cuentas')" id="side-cuentas" class="side-btn w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 flex items-center gap-3">
+          <i class="fa-solid fa-building-columns text-cyan-400 w-4"></i> Bancos y Cajas
+        </button>
         <button onclick="switchTab('deudas')" id="side-deudas" class="side-btn w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 flex items-center gap-3">
           <i class="fa-solid fa-vault text-amber-400 w-4"></i> Estr. Pasivos
+        </button>
+        <button onclick="switchTab('parametros')" id="side-parametros" class="side-btn w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 flex items-center gap-3">
+          <i class="fa-solid fa-sliders text-indigo-400 w-4"></i> Parametrización
         </button>
       </nav>
     </div>
 
     <div class="p-4 border-t border-slate-800 bg-slate-900/50 space-y-1">
-      <p class="text-[11px] font-bold text-slate-300">Base de datos:</p>
+      <p class="text-[11px] font-bold text-slate-300">Base de datos Cloud:</p>
       <p class="text-[10px] text-slate-500 truncate">finanzas-perosnales</p>
     </div>
   </aside>
@@ -73,7 +79,7 @@
       </div>
 
       <button onclick="openModal('ingreso')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 shadow-lg shadow-emerald-600/20">
-        <i class="fa-solid fa-plus"></i> Registrar Movimiento
+        <i class="fa-solid fa-plus"></i> Registrar Transacción
       </button>
     </header>
 
@@ -108,7 +114,7 @@
         </div>
       </div>
 
-      <!-- VISTAS DE LISTAS -->
+      <!-- VISTA INGRESOS -->
       <div id="view-ingresos" class="hidden space-y-4">
         <h2 class="text-base font-bold text-slate-100">Ingresos del Mes</h2>
         <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
@@ -117,6 +123,7 @@
               <tr>
                 <th class="p-3.5">Concepto</th>
                 <th class="p-3.5">Categoría</th>
+                <th class="p-3.5">Cuenta / Banco</th>
                 <th class="p-3.5">Fecha</th>
                 <th class="p-3.5 text-right">Monto</th>
                 <th class="p-3.5 text-center">Acción</th>
@@ -127,6 +134,7 @@
         </div>
       </div>
 
+      <!-- VISTA GASTOS -->
       <div id="view-gastos" class="hidden space-y-4">
         <h2 class="text-base font-bold text-slate-100">Gastos del Mes</h2>
         <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
@@ -135,6 +143,7 @@
               <tr>
                 <th class="p-3.5">Concepto</th>
                 <th class="p-3.5">Categoría</th>
+                <th class="p-3.5">Cuenta / Banco</th>
                 <th class="p-3.5">Fecha</th>
                 <th class="p-3.5 text-right">Monto</th>
                 <th class="p-3.5 text-center">Acción</th>
@@ -145,56 +154,163 @@
         </div>
       </div>
 
+      <!-- VISTA MÓDULO BANCOS Y CAJAS -->
+      <div id="view-cuentas" class="hidden space-y-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-base font-bold text-slate-100">Cuentas Bancarias y Cajas</h2>
+            <p class="text-xs text-slate-400">Gestión de disponibilidad financiera</p>
+          </div>
+          <button onclick="openModalCuenta()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i> Nueva Cuenta / Banco
+          </button>
+        </div>
+        <div id="grid-cuentas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </div>
+
+      <!-- VISTA DEUDAS -->
       <div id="view-deudas" class="hidden space-y-6">
         <h2 class="text-base font-bold text-slate-100">Pasivos y Deudas</h2>
         <div id="list-deudas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
       </div>
 
+      <!-- VISTA PARAMETRIZACIÓN DE CONCEPTOS -->
+      <div id="view-parametros" class="hidden space-y-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-base font-bold text-slate-100">Parametrización de Conceptos</h2>
+            <p class="text-xs text-slate-400">Configuración de catálogo de conceptos y categorías</p>
+          </div>
+          <button onclick="openModalParametro()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i> Crear Concepto
+          </button>
+        </div>
+        <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-850 text-slate-400 font-bold uppercase border-b border-slate-800">
+              <tr>
+                <th class="p-3.5">Nombre del Concepto</th>
+                <th class="p-3.5">Módulo / Tipo</th>
+                <th class="p-3.5">Categoría</th>
+                <th class="p-3.5 text-center">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="list-conceptos-param" class="divide-y divide-slate-800 text-slate-300"></tbody>
+          </table>
+        </div>
+      </div>
+
     </main>
   </div>
 
-  <!-- MODAL DE FORMULARIO -->
+  <!-- MODAL TRANSACCIÓN -->
   <div id="modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 class="text-sm font-bold text-slate-100">Registrar en Turso Cloud</h3>
+        <h3 class="text-sm font-bold text-slate-100">Registrar Transacción</h3>
         <button onclick="closeModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <form onsubmit="handleFormSubmit(event)" class="space-y-4">
         <div>
-          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Tipo de Movimiento</label>
-          <select id="form-tipo" onchange="toggleSubtipo()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Tipo</label>
+          <select id="form-tipo" onchange="updateFormConceptos(); toggleSubtipo();" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
             <option value="ingreso">Ingreso</option>
             <option value="gasto">Gasto</option>
             <option value="deuda">Deuda / Pasivo</option>
           </select>
         </div>
         <div>
-          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Concepto</label>
-          <input type="text" id="form-concepto" required placeholder="Ej: Salario, Arriendo, Crédito..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Concepto (Parametrizado)</label>
+          <select id="form-concepto" onchange="autoFillCategoria()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100"></select>
         </div>
         <div>
           <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Categoría</label>
-          <input type="text" id="form-categoria" placeholder="Ej: Vivienda, Banco, Personal..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+          <input type="text" id="form-categoria" readonly class="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-400">
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Cuenta / Banco / Caja</label>
+          <select id="form-cuenta" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100"></select>
         </div>
         <div id="group-subtipo" class="hidden">
           <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Clase de Deuda</label>
-          <select id="form-subtipo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+          <select id="form-subtipo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
             <option value="financiera">Financiera (Banco/Tarjeta)</option>
             <option value="personal">Personal (Familiar/Amigo)</option>
           </select>
         </div>
         <div>
           <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Monto ($)</label>
-          <input type="number" step="0.01" id="form-monto" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+          <input type="number" step="0.01" id="form-monto" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
         </div>
         <div>
           <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Fecha</label>
-          <input type="date" id="form-fecha" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+          <input type="date" id="form-fecha" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
         </div>
         <div class="flex justify-end space-x-2 pt-3 border-t border-slate-800">
           <button type="button" onclick="closeModal()" class="px-4 py-2 text-xs font-semibold bg-slate-800 text-slate-300 rounded-xl">Cancelar</button>
-          <button type="submit" class="px-4 py-2 text-xs font-semibold bg-emerald-600 text-white rounded-xl shadow-lg shadow-emerald-600/20">Guardar Registro</button>
+          <button type="submit" class="px-4 py-2 text-xs font-semibold bg-emerald-600 text-white rounded-xl">Guardar en Turso</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL BANCO / CAJA -->
+  <div id="modal-cuenta" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-bold text-slate-100">Nueva Cuenta o Caja</h3>
+        <button onclick="closeModalCuenta()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form onsubmit="handleCuentaSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Nombre de Cuenta / Banco</label>
+          <input type="text" id="cuenta-nombre" required placeholder="Ej: Bancolombia, Caja General, Nequi..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Tipo de Entidad</label>
+          <select id="cuenta-tipo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+            <option value="banco">Banco / Cuenta Bancaria</option>
+            <option value="caja">Caja / Efectivo</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Saldo Inicial ($)</label>
+          <input type="number" step="0.01" id="cuenta-saldo" required placeholder="0.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+        </div>
+        <div class="flex justify-end space-x-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeModalCuenta()" class="px-4 py-2 text-xs font-semibold bg-slate-800 text-slate-300 rounded-xl">Cancelar</button>
+          <button type="submit" class="px-4 py-2 text-xs font-semibold bg-cyan-600 text-white rounded-xl">Guardar Cuenta</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL PARAMETRIZACIÓN CONCEPTO -->
+  <div id="modal-param" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-bold text-slate-100">Parametrizar Nuevo Concepto</h3>
+        <button onclick="closeModalParametro()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form onsubmit="handleParamSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Aplica para</label>
+          <select id="param-tipo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+            <option value="ingreso">Ingreso</option>
+            <option value="gasto">Gasto</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Nombre del Concepto</label>
+          <input type="text" id="param-nombre" required placeholder="Ej: Venta de Servicios, Servicios Públicos..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Categoría</label>
+          <input type="text" id="param-categoria" required placeholder="Ej: Operativos, Nómina, Vivienda..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+        </div>
+        <div class="flex justify-end space-x-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeModalParametro()" class="px-4 py-2 text-xs font-semibold bg-slate-800 text-slate-300 rounded-xl">Cancelar</button>
+          <button type="submit" class="px-4 py-2 text-xs font-semibold bg-indigo-600 text-white rounded-xl">Guardar Parametrización</button>
         </div>
       </form>
     </div>
@@ -219,7 +335,7 @@
         await db.execute("SELECT 1");
         document.getElementById('db-status').innerText = "● Conectado a Turso";
         document.getElementById('db-status').className = "text-[10px] text-emerald-400 font-semibold";
-        window.fetchMovimientos();
+        window.fetchAllData();
       } catch (err) {
         console.error(err);
         document.getElementById('db-status').innerText = "● Error de conexión";
@@ -236,6 +352,8 @@
     document.getElementById('monthSelector').value = selectedMonth;
 
     let movimientos = [];
+    let conceptosList = [];
+    let cuentasList = [];
     let chartComp = null;
 
     function changeMonth(val) {
@@ -255,7 +373,7 @@
       });
       document.getElementById(`side-${tab}`).classList.add('bg-slate-800', 'text-emerald-400');
 
-      ['dashboard', 'ingresos', 'gastos', 'deudas'].forEach(v => {
+      ['dashboard', 'ingresos', 'gastos', 'cuentas', 'deudas', 'parametros'].forEach(v => {
         document.getElementById(`view-${v}`).classList.add('hidden');
       });
       document.getElementById(`view-${tab}`).classList.remove('hidden');
@@ -264,6 +382,8 @@
     function openModal(defaultType = 'ingreso') {
       document.getElementById('form-tipo').value = defaultType;
       document.getElementById('form-fecha').value = `${selectedMonth}-01`;
+      updateFormConceptos();
+      updateFormCuentas();
       toggleSubtipo();
       document.getElementById('modal').classList.remove('hidden');
       document.getElementById('modal').classList.add('flex');
@@ -274,18 +394,64 @@
       document.getElementById('modal').classList.remove('flex');
     }
 
-    window.fetchMovimientos = async function() {
+    function openModalCuenta() {
+      document.getElementById('modal-cuenta').classList.remove('hidden');
+      document.getElementById('modal-cuenta').classList.add('flex');
+    }
+    function closeModalCuenta() {
+      document.getElementById('modal-cuenta').classList.add('hidden');
+      document.getElementById('modal-cuenta').classList.remove('flex');
+    }
+
+    function openModalParametro() {
+      document.getElementById('modal-param').classList.remove('hidden');
+      document.getElementById('modal-param').classList.add('flex');
+    }
+    function closeModalParametro() {
+      document.getElementById('modal-param').classList.add('hidden');
+      document.getElementById('modal-param').classList.remove('flex');
+    }
+
+    function updateFormConceptos() {
+      const tipo = document.getElementById('form-tipo').value;
+      const select = document.getElementById('form-concepto');
+      const filtered = conceptosList.filter(c => c.tipo === tipo || tipo === 'deuda');
+
+      if (filtered.length === 0) {
+        select.innerHTML = `<option value="">Sin conceptos. Crea uno en Parametrización</option>`;
+      } else {
+        select.innerHTML = filtered.map(c => `<option value="${c.nombre}" data-cat="${c.categoria}">${c.nombre}</option>`).join('');
+      }
+      autoFillCategoria();
+    }
+
+    function autoFillCategoria() {
+      const select = document.getElementById('form-concepto');
+      const selectedOption = select.options[select.selectedIndex];
+      if (selectedOption) {
+        document.getElementById('form-categoria').value = selectedOption.getAttribute('data-cat') || 'General';
+      }
+    }
+
+    function updateFormCuentas() {
+      const select = document.getElementById('form-cuenta');
+      select.innerHTML = cuentasList.map(c => `<option value="${c.id}">${c.nombre} (${c.tipo.toUpperCase()})</option>`).join('') || `<option value="">Sin cuentas activas</option>`;
+    }
+
+    window.fetchAllData = async function() {
       try {
-        const res = await window.tursoDB.execute("SELECT * FROM movimientos ORDER BY fecha DESC");
-        movimientos = res.rows.map(r => ({
-          id: r.id,
-          tipo: r.tipo,
-          concepto: r.concepto,
-          categoria: r.categoria || 'General',
-          monto: parseFloat(r.monto),
-          fecha: r.fecha,
-          subtipo: r.subtipo || 'financiera'
+        const resMov = await window.tursoDB.execute("SELECT * FROM movimientos ORDER BY fecha DESC");
+        movimientos = resMov.rows.map(r => ({
+          id: r.id, tipo: r.tipo, concepto: r.concepto, categoria: r.categoria || 'General',
+          monto: parseFloat(r.monto), fecha: r.fecha, subtipo: r.subtipo || 'financiera', cuenta_id: r.cuenta_id
         }));
+
+        const resCon = await window.tursoDB.execute("SELECT * FROM conceptos");
+        conceptosList = resCon.rows.map(r => ({ id: r.id, tipo: r.tipo, nombre: r.nombre, categoria: r.categoria }));
+
+        const resCue = await window.tursoDB.execute("SELECT * FROM cuentas");
+        cuentasList = resCue.rows.map(r => ({ id: r.id, nombre: r.nombre, tipo: r.tipo, saldo_inicial: parseFloat(r.saldo_inicial) }));
+
         renderApp();
       } catch (err) {
         console.error("Error al leer Turso:", err);
@@ -297,33 +463,77 @@
       const tipo = document.getElementById('form-tipo').value;
       const concepto = document.getElementById('form-concepto').value;
       const categoria = document.getElementById('form-categoria').value || 'General';
+      const cuenta_id = document.getElementById('form-cuenta').value;
       const subtipo = document.getElementById('form-subtipo').value;
       const monto = parseFloat(document.getElementById('form-monto').value) || 0;
       const fecha = document.getElementById('form-fecha').value;
 
       try {
         await window.tursoDB.execute({
-          sql: "INSERT INTO movimientos (id, tipo, concepto, categoria, monto, fecha, subtipo) VALUES (?, ?, ?, ?, ?, ?, ?)",
-          args: [Date.now().toString(), tipo, concepto, categoria, monto, fecha, subtipo]
+          sql: "INSERT INTO movimientos (id, tipo, concepto, categoria, monto, fecha, subtipo, cuenta_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+          args: [Date.now().toString(), tipo, concepto, categoria, monto, fecha, subtipo, cuenta_id]
         });
         closeModal();
-        window.fetchMovimientos();
+        window.fetchAllData();
       } catch (err) {
         alert("Error al guardar en Turso: " + err.message);
       }
     }
 
+    async function handleCuentaSubmit(e) {
+      e.preventDefault();
+      const nombre = document.getElementById('cuenta-nombre').value;
+      const tipo = document.getElementById('cuenta-tipo').value;
+      const saldo = parseFloat(document.getElementById('cuenta-saldo').value) || 0;
+
+      try {
+        await window.tursoDB.execute({
+          sql: "INSERT INTO cuentas (id, nombre, tipo, saldo_inicial) VALUES (?, ?, ?, ?)",
+          args: [Date.now().toString(), nombre, tipo, saldo]
+        });
+        closeModalCuenta();
+        window.fetchAllData();
+      } catch (err) {
+        alert("Error al guardar cuenta: " + err.message);
+      }
+    }
+
+    async function handleParamSubmit(e) {
+      e.preventDefault();
+      const tipo = document.getElementById('param-tipo').value;
+      const nombre = document.getElementById('param-nombre').value;
+      const categoria = document.getElementById('param-categoria').value;
+
+      try {
+        await window.tursoDB.execute({
+          sql: "INSERT INTO conceptos (id, tipo, nombre, categoria) VALUES (?, ?, ?, ?)",
+          args: [Date.now().toString(), tipo, nombre, categoria]
+        });
+        closeModalParametro();
+        window.fetchAllData();
+      } catch (err) {
+        alert("Error al parametrizar concepto: " + err.message);
+      }
+    }
+
     async function deleteMovimiento(id) {
-      if (confirm('¿Desea eliminar este registro de la base de datos Turso?')) {
-        try {
-          await window.tursoDB.execute({
-            sql: "DELETE FROM movimientos WHERE id = ?",
-            args: [id.toString()]
-          });
-          window.fetchMovimientos();
-        } catch (err) {
-          alert("Error al eliminar: " + err.message);
-        }
+      if (confirm('¿Eliminar movimiento?')) {
+        await window.tursoDB.execute({ sql: "DELETE FROM movimientos WHERE id = ?", args: [id.toString()] });
+        window.fetchAllData();
+      }
+    }
+
+    async function deleteCuenta(id) {
+      if (confirm('¿Eliminar esta cuenta?')) {
+        await window.tursoDB.execute({ sql: "DELETE FROM cuentas WHERE id = ?", args: [id.toString()] });
+        window.fetchAllData();
+      }
+    }
+
+    async function deleteConcepto(id) {
+      if (confirm('¿Eliminar este concepto parametrizado?')) {
+        await window.tursoDB.execute({ sql: "DELETE FROM conceptos WHERE id = ?", args: [id.toString()] });
+        window.fetchAllData();
       }
     }
 
@@ -343,33 +553,75 @@
       document.getElementById('dash-gastos').innerText = formatMoney(gastos);
       document.getElementById('dash-deudas').innerText = formatMoney(deudas);
 
+      const getNombreCuenta = (id) => {
+        const c = cuentasList.find(cu => cu.id === id);
+        return c ? c.nombre : 'General';
+      };
+
       // Tabla Ingresos
       document.getElementById('list-ingresos').innerHTML = mesMovs.filter(m => m.tipo === 'ingreso').map(i => `
         <tr class="hover:bg-slate-800/40">
           <td class="p-3.5 font-medium text-slate-100">${i.concepto}</td>
           <td class="p-3.5"><span class="px-2 py-0.5 bg-slate-800 text-[10px] font-semibold rounded-md border border-slate-700">${i.categoria}</span></td>
+          <td class="p-3.5 text-cyan-400 font-semibold">${getNombreCuenta(i.cuenta_id)}</td>
           <td class="p-3.5 text-slate-400">${i.fecha}</td>
           <td class="p-3.5 text-right font-bold text-emerald-400">${formatMoney(i.monto)}</td>
           <td class="p-3.5 text-center">
             <button onclick="deleteMovimiento('${i.id}')" class="text-slate-500 hover:text-rose-400"><i class="fa-solid fa-trash-can"></i></button>
           </td>
         </tr>
-      `).join('') || `<tr><td colspan="5" class="p-4 text-center text-slate-500">Sin registros de ingresos en este mes</td></tr>`;
+      `).join('') || `<tr><td colspan="6" class="p-4 text-center text-slate-500">Sin ingresos en este periodo</td></tr>`;
 
       // Tabla Gastos
       document.getElementById('list-gastos').innerHTML = mesMovs.filter(m => m.tipo === 'gasto').map(g => `
         <tr class="hover:bg-slate-800/40">
           <td class="p-3.5 font-medium text-slate-100">${g.concepto}</td>
           <td class="p-3.5"><span class="px-2 py-0.5 bg-slate-800 text-[10px] font-semibold rounded-md border border-slate-700">${g.categoria}</span></td>
+          <td class="p-3.5 text-cyan-400 font-semibold">${getNombreCuenta(g.cuenta_id)}</td>
           <td class="p-3.5 text-slate-400">${g.fecha}</td>
           <td class="p-3.5 text-right font-bold text-rose-400">${formatMoney(g.monto)}</td>
           <td class="p-3.5 text-center">
             <button onclick="deleteMovimiento('${g.id}')" class="text-slate-500 hover:text-rose-400"><i class="fa-solid fa-trash-can"></i></button>
           </td>
         </tr>
-      `).join('') || `<tr><td colspan="5" class="p-4 text-center text-slate-500">Sin registros de gastos en este mes</td></tr>`;
+      `).join('') || `<tr><td colspan="6" class="p-4 text-center text-slate-500">Sin gastos en este periodo</td></tr>`;
 
-      // Cards Deudas
+      // Cuentas / Bancos Cards
+      document.getElementById('grid-cuentas').innerHTML = cuentasList.map(c => {
+        const ingCuenta = movimientos.filter(m => m.cuenta_id === c.id && m.tipo === 'ingreso').reduce((a, b) => a + b.monto, 0);
+        const gasCuenta = movimientos.filter(m => m.cuenta_id === c.id && m.tipo === 'gasto').reduce((a, b) => a + b.monto, 0);
+        const saldoActual = c.saldo_inicial + ingCuenta - gasCuenta;
+
+        return `
+          <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-3">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="font-bold text-slate-100 text-sm">${c.nombre}</h3>
+                <span class="text-[10px] text-cyan-400 font-semibold uppercase">${c.tipo}</span>
+              </div>
+              <button onclick="deleteCuenta('${c.id}')" class="text-slate-600 hover:text-rose-400 text-xs"><i class="fa-solid fa-trash"></i></button>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-500">Saldo Actual Disponible</p>
+              <p class="text-xl font-extrabold text-emerald-400">${formatMoney(saldoActual)}</p>
+            </div>
+          </div>
+        `;
+      }).join('') || `<p class="text-xs text-slate-500">No hay bancos o cajas registradas.</p>`;
+
+      // Parametrización Tabla
+      document.getElementById('list-conceptos-param').innerHTML = conceptosList.map(c => `
+        <tr class="hover:bg-slate-800/40">
+          <td class="p-3.5 font-bold text-slate-100">${c.nombre}</td>
+          <td class="p-3.5"><span class="px-2 py-0.5 ${c.tipo === 'ingreso' ? 'bg-emerald-950 text-emerald-400' : 'bg-rose-950 text-rose-400'} text-[10px] font-bold uppercase rounded-md">${c.tipo}</span></td>
+          <td class="p-3.5 text-slate-400">${c.categoria}</td>
+          <td class="p-3.5 text-center">
+            <button onclick="deleteConcepto('${c.id}')" class="text-slate-500 hover:text-rose-400"><i class="fa-solid fa-trash-can"></i></button>
+          </td>
+        </tr>
+      `).join('') || `<tr><td colspan="4" class="p-4 text-center text-slate-500">No hay conceptos parametrizados</td></tr>`;
+
+      // Deudas
       document.getElementById('list-deudas').innerHTML = movimientos.filter(m => m.tipo === 'deuda').map(d => `
         <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-3">
           <div class="flex justify-between items-start">
@@ -380,11 +632,11 @@
             <button onclick="deleteMovimiento('${d.id}')" class="text-slate-600 hover:text-rose-400 text-xs"><i class="fa-solid fa-trash"></i></button>
           </div>
           <div class="flex justify-between text-xs">
-            <span class="text-slate-400">Monto Registrado:</span>
+            <span class="text-slate-400">Monto:</span>
             <span class="font-bold text-amber-400">${formatMoney(d.monto)}</span>
           </div>
         </div>
-      `).join('') || `<p class="text-xs text-slate-500">Sin pasivos registrados en Turso</p>`;
+      `).join('') || `<p class="text-xs text-slate-500">Sin pasivos registrados</p>`;
 
       renderChart(ingresos, gastos);
     }
@@ -396,20 +648,13 @@
         type: 'bar',
         data: {
           labels: ['Ingresos', 'Gastos'],
-          datasets: [{
-            data: [ing, gas],
-            backgroundColor: ['#10b981', '#f43f5e'],
-            borderRadius: 8
-          }]
+          datasets: [{ data: [ing, gas], backgroundColor: ['#10b981', '#f43f5e'], borderRadius: 8 }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
-          scales: {
-            y: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } },
-            x: { ticks: { color: '#64748b' }, grid: { display: false } }
-          }
+          scales: { y: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } }, x: { ticks: { color: '#64748b' }, grid: { display: false } } }
         }
       });
     }
