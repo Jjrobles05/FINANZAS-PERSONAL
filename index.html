@@ -255,4 +255,644 @@
                 <th class="p-3.5">Nombre del Concepto</th>
                 <th class="p-3.5">Módulo / Tipo</th>
                 <th class="p-3.5">Categoría</th>
-                <th class="p-3
+                <th class="p-3.5 text-center">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="list-conceptos-param" class="divide-y divide-slate-800 text-slate-300"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- MODALES DE FORMULARIO -->
+  <div id="modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-bold text-slate-100">Registrar Transacción</h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form onsubmit="handleFormSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Módulo</label>
+          <select id="form-tipo" onchange="updateFormConceptos()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+            <option value="ingreso">Ingreso</option>
+            <option value="gasto">Gasto</option>
+            <option value="nomina">Nómina</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Concepto (Parametrizado)</label>
+          <select id="form-concepto" onchange="autoFillCategoria()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100"></select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Categoría</label>
+          <input type="text" id="form-categoria" readonly class="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-400">
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Cuenta / Banco / Caja</label>
+          <select id="form-cuenta" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100"></select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Monto ($)</label>
+          <input type="number" step="0.01" id="form-monto" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Fecha</label>
+          <input type="date" id="form-fecha" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+        </div>
+        <div class="flex justify-end space-x-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 text-xs font-semibold bg-slate-800 text-slate-300 rounded-xl">Cancelar</button>
+          <button type="submit" class="px-4 py-2 text-xs font-semibold bg-emerald-600 text-white rounded-xl">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="modal-abono" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-bold text-slate-100">Registrar Abono a Crédito / Pasivo</h3>
+        <button onclick="closeModalAbono()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form onsubmit="handleAbonoSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Seleccionar Crédito</label>
+          <select id="abono-credito-id" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100"></select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Pagar desde Cuenta / Banco</label>
+          <select id="abono-cuenta-id" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100"></select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Monto de Abono ($)</label>
+          <input type="number" step="0.01" id="abono-monto" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Fecha del Pago</label>
+          <input type="date" id="abono-fecha" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+        </div>
+        <div class="flex justify-end space-x-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeModalAbono()" class="px-4 py-2 text-xs font-semibold bg-slate-800 text-slate-300 rounded-xl">Cancelar</button>
+          <button type="submit" class="px-4 py-2 text-xs font-semibold bg-amber-600 text-white rounded-xl">Registrar Pago</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="modal-cuenta" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-bold text-slate-100">Nueva Cuenta o Caja</h3>
+        <button onclick="closeModalCuenta()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form onsubmit="handleCuentaSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Nombre de Cuenta / Banco</label>
+          <input type="text" id="cuenta-nombre" required placeholder="Ej: Bancolombia, Caja General, Nequi..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Tipo de Entidad</label>
+          <select id="cuenta-tipo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+            <option value="banco">Banco / Cuenta Bancaria</option>
+            <option value="caja">Caja / Efectivo</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Saldo Inicial ($)</label>
+          <input type="number" step="0.01" id="cuenta-saldo" required placeholder="0.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+        </div>
+        <div class="flex justify-end space-x-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeModalCuenta()" class="px-4 py-2 text-xs font-semibold bg-slate-800 text-slate-300 rounded-xl">Cancelar</button>
+          <button type="submit" class="px-4 py-2 text-xs font-semibold bg-cyan-600 text-white rounded-xl">Guardar Cuenta</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="modal-credito" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-bold text-slate-100">Crear Nuevo Crédito / Pasivo</h3>
+        <button onclick="closeModalCredito()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form onsubmit="handleCreditoSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Número de Crédito / Pagaré</label>
+          <input type="text" id="credito-numero" required placeholder="Ej: CR-2026-001" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Entidad / Acreedor</label>
+          <input type="text" id="credito-entidad" required placeholder="Ej: Banco Davivienda, Pedro Pérez..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Tipo de Pasivo</label>
+          <select id="credito-tipo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+            <option value="financiera">Financiera (Banco/Tarjeta)</option>
+            <option value="personal">Personal (Prestamo/Informal)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Valor Prestado Total ($)</label>
+          <input type="number" step="0.01" id="credito-monto" required placeholder="0.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Fecha de Inicio / Préstamo</label>
+          <input type="date" id="credito-fecha" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+        </div>
+        <div class="flex justify-end space-x-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeModalCredito()" class="px-4 py-2 text-xs font-semibold bg-slate-800 text-slate-300 rounded-xl">Cancelar</button>
+          <button type="submit" class="px-4 py-2 text-xs font-semibold bg-amber-600 text-white rounded-xl">Guardar Crédito</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="modal-param" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-bold text-slate-100">Parametrizar Nuevo Concepto</h3>
+        <button onclick="closeModalParametro()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form onsubmit="handleParamSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Módulo / Aplica para</label>
+          <select id="param-tipo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+            <option value="ingreso">Concepto de Ingreso</option>
+            <option value="gasto">Concepto de Gasto</option>
+            <option value="nomina">Concepto de Nómina</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Nombre del Concepto</label>
+          <input type="text" id="param-nombre" required placeholder="Ej: Sueldo Básico, Horas Extras, Arriendo..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Categoría</label>
+          <input type="text" id="param-categoria" required placeholder="Ej: Personal, Operaciones, Administrativo..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+        </div>
+        <div class="flex justify-end space-x-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeModalParametro()" class="px-4 py-2 text-xs font-semibold bg-slate-800 text-slate-300 rounded-xl">Cancelar</button>
+          <button type="submit" class="px-4 py-2 text-xs font-semibold bg-indigo-600 text-white rounded-xl">Guardar Parametrización</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- SCRIPT CONEXIÓN SUPABASE EN TIEMPO REAL CON AUTENTICACIÓN -->
+  <script>
+    // CREDENCIALES CONFIGURADAS
+    const SUPABASE_URL = "https://urdhohhqggsduzkssvlz.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_NLVF_Da2_6zAajTE6Z9Q-w_NNJFgBn0";
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let authMode = 'login';
+    let currentUser = null;
+
+    let movimientos = [];
+    let conceptosList = [];
+    let cuentasList = [];
+    let creditosList = [];
+    let chartComp = null;
+
+    const today = new Date().toISOString().slice(0, 10);
+    const now = new Date();
+    let selectedMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    
+    document.getElementById('monthSelector').value = selectedMonth;
+    document.getElementById('filtroFechaCuenta').value = today;
+    document.getElementById('filtroFechaCredito').value = today;
+
+    // ESCUCHAR ESTADO DE SESIÓN
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        currentUser = session.user;
+        document.getElementById('user-email-display').innerText = currentUser.email;
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('app-sidebar').classList.remove('hidden');
+        document.getElementById('app-content').classList.remove('hidden');
+        fetchAllData();
+      } else {
+        currentUser = null;
+        document.getElementById('auth-screen').classList.remove('hidden');
+        document.getElementById('app-sidebar').classList.add('hidden');
+        document.getElementById('app-content').classList.add('hidden');
+      }
+    });
+
+    async function handleAuth(e) {
+      e.preventDefault();
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-pass').value.trim();
+
+      if (!email || !password) {
+        alert("Por favor ingresa correo y contraseña.");
+        return;
+      }
+
+      if (authMode === 'login') {
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) alert("Error al iniciar sesión: " + error.message);
+      } else {
+        const { data, error } = await supabaseClient.auth.signUp({ email, password });
+        if (error) {
+          alert("Error al registrarse: " + error.message);
+        } else if (data.user && data.session === null) {
+          alert("Registro recibido. Si tienes activada la confirmación por correo en Supabase, revisa tu bandeja de entrada. De lo contrario, ya puedes Iniciar Sesión.");
+        } else {
+          alert("¡Registro exitoso! Iniciando sesión...");
+        }
+      }
+    }
+
+    async function logout() {
+      await supabaseClient.auth.signOut();
+    }
+
+    function changeMonth(val) {
+      selectedMonth = val;
+      renderApp();
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.side-btn').forEach(b => {
+        b.classList.remove('bg-slate-800', 'text-emerald-400');
+        b.classList.add('text-slate-400');
+      });
+      document.getElementById(`side-${tab}`).classList.add('bg-slate-800', 'text-emerald-400');
+
+      ['dashboard', 'ingresos', 'gastos', 'cuentas', 'deudas', 'parametros'].forEach(v => {
+        document.getElementById(`view-${v}`).classList.add('hidden');
+      });
+      document.getElementById(`view-${tab}`).classList.remove('hidden');
+    }
+
+    function openModal(defaultType = 'ingreso') {
+      document.getElementById('form-tipo').value = defaultType;
+      document.getElementById('form-fecha').value = `${selectedMonth}-01`;
+      updateFormConceptos();
+      updateFormCuentas();
+      document.getElementById('modal').classList.remove('hidden');
+      document.getElementById('modal').classList.add('flex');
+    }
+    function closeModal() {
+      document.getElementById('modal').classList.add('hidden');
+      document.getElementById('modal').classList.remove('flex');
+    }
+
+    function openModalAbono() {
+      const selectCred = document.getElementById('abono-credito-id');
+      selectCred.innerHTML = creditosList.map(c => `<option value="${c.id}">${c.numero_credito} - ${c.entidad_acreedor}</option>`).join('') || `<option value="">Sin créditos activos</option>`;
+      
+      const selectCue = document.getElementById('abono-cuenta-id');
+      selectCue.innerHTML = cuentasList.map(c => `<option value="${c.id}">${c.nombre} (${c.tipo.toUpperCase()})</option>`).join('') || `<option value="">Sin cuentas activas</option>`;
+
+      document.getElementById('abono-fecha').value = today;
+      document.getElementById('modal-abono').classList.remove('hidden');
+      document.getElementById('modal-abono').classList.add('flex');
+    }
+    function closeModalAbono() {
+      document.getElementById('modal-abono').classList.add('hidden');
+      document.getElementById('modal-abono').classList.remove('flex');
+    }
+
+    function openModalCuenta() {
+      document.getElementById('modal-cuenta').classList.remove('hidden');
+      document.getElementById('modal-cuenta').classList.add('flex');
+    }
+    function closeModalCuenta() {
+      document.getElementById('modal-cuenta').classList.add('hidden');
+      document.getElementById('modal-cuenta').classList.remove('flex');
+    }
+
+    function openModalCredito() {
+      document.getElementById('credito-fecha').value = today;
+      document.getElementById('modal-credito').classList.remove('hidden');
+      document.getElementById('modal-credito').classList.add('flex');
+    }
+    function closeModalCredito() {
+      document.getElementById('modal-credito').classList.add('hidden');
+      document.getElementById('modal-credito').classList.remove('flex');
+    }
+
+    function openModalParametro() {
+      document.getElementById('modal-param').classList.remove('hidden');
+      document.getElementById('modal-param').classList.add('flex');
+    }
+    function closeModalParametro() {
+      document.getElementById('modal-param').classList.add('hidden');
+      document.getElementById('modal-param').classList.remove('flex');
+    }
+
+    function updateFormConceptos() {
+      const tipo = document.getElementById('form-tipo').value;
+      const select = document.getElementById('form-concepto');
+      const filtered = conceptosList.filter(c => c.tipo === tipo);
+
+      if (filtered.length === 0) {
+        select.innerHTML = `<option value="">Sin conceptos. Crea uno en Parametrización</option>`;
+      } else {
+        select.innerHTML = filtered.map(c => `<option value="${c.nombre}" data-cat="${c.categoria}">${c.nombre}</option>`).join('');
+      }
+      autoFillCategoria();
+    }
+
+    function autoFillCategoria() {
+      const select = document.getElementById('form-concepto');
+      const selectedOption = select.options[select.selectedIndex];
+      if (selectedOption) {
+        document.getElementById('form-categoria').value = selectedOption.getAttribute('data-cat') || 'General';
+      }
+    }
+
+    function updateFormCuentas() {
+      const select = document.getElementById('form-cuenta');
+      select.innerHTML = cuentasList.map(c => `<option value="${c.id}">${c.nombre} (${c.tipo.toUpperCase()})</option>`).join('') || `<option value="">Sin cuentas activas</option>`;
+    }
+
+    async function fetchAllData() {
+      try {
+        const { data: dataMov } = await supabaseClient.from('movimientos').select('*').order('fecha', { ascending: false });
+        movimientos = dataMov || [];
+
+        const { data: dataCon } = await supabaseClient.from('conceptos').select('*');
+        conceptosList = dataCon || [];
+
+        const { data: dataCue } = await supabaseClient.from('cuentas').select('*');
+        cuentasList = dataCue || [];
+
+        const { data: dataCred } = await supabaseClient.from('creditos').select('*');
+        creditosList = dataCred || [];
+
+        renderApp();
+      } catch (err) {
+        console.error("Error al leer Supabase:", err);
+      }
+    }
+
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+      const tipo = document.getElementById('form-tipo').value;
+      const concepto = document.getElementById('form-concepto').value;
+      const categoria = document.getElementById('form-categoria').value || 'General';
+      const cuenta_id = document.getElementById('form-cuenta').value;
+      const monto = parseFloat(document.getElementById('form-monto').value) || 0;
+      const fecha = document.getElementById('form-fecha').value;
+
+      const { error } = await supabaseClient.from('movimientos').insert([{
+        tipo, concepto, categoria, monto, fecha, cuenta_id
+      }]);
+
+      if (error) alert("Error: " + error.message);
+      else { closeModal(); fetchAllData(); }
+    }
+
+    async function handleAbonoSubmit(e) {
+      e.preventDefault();
+      const credito_id = document.getElementById('abono-credito-id').value;
+      const cuenta_id = document.getElementById('abono-cuenta-id').value;
+      const monto = parseFloat(document.getElementById('abono-monto').value) || 0;
+      const fecha = document.getElementById('abono-fecha').value;
+
+      const { error } = await supabaseClient.from('movimientos').insert([{
+        tipo: 'gasto', concepto: 'Abono a Crédito', categoria: 'Amortización Deuda', monto, fecha, cuenta_id, credito_id
+      }]);
+
+      if (error) alert("Error: " + error.message);
+      else { closeModalAbono(); fetchAllData(); }
+    }
+
+    async function handleCuentaSubmit(e) {
+      e.preventDefault();
+      const nombre = document.getElementById('cuenta-nombre').value;
+      const tipo = document.getElementById('cuenta-tipo').value;
+      const saldo_inicial = parseFloat(document.getElementById('cuenta-saldo').value) || 0;
+
+      const { error } = await supabaseClient.from('cuentas').insert([{ nombre, tipo, saldo_inicial }]);
+
+      if (error) alert("Error: " + error.message);
+      else { closeModalCuenta(); fetchAllData(); }
+    }
+
+    async function handleCreditoSubmit(e) {
+      e.preventDefault();
+      const numero_credito = document.getElementById('credito-numero').value;
+      const entidad_acreedor = document.getElementById('credito-entidad').value;
+      const tipo = document.getElementById('credito-tipo').value;
+      const monto_prestado = parseFloat(document.getElementById('credito-monto').value) || 0;
+      const fecha_inicio = document.getElementById('credito-fecha').value;
+
+      const { error } = await supabaseClient.from('creditos').insert([{
+        numero_credito, entidad_acreedor, tipo, monto_prestado, fecha_inicio
+      }]);
+
+      if (error) alert("Error: " + error.message);
+      else { closeModalCredito(); fetchAllData(); }
+    }
+
+    async function handleParamSubmit(e) {
+      e.preventDefault();
+      const tipo = document.getElementById('param-tipo').value;
+      const nombre = document.getElementById('param-nombre').value;
+      const categoria = document.getElementById('param-categoria').value;
+
+      const { error } = await supabaseClient.from('conceptos').insert([{ tipo, nombre, categoria }]);
+
+      if (error) alert("Error: " + error.message);
+      else { closeModalParametro(); fetchAllData(); }
+    }
+
+    async function deleteMovimiento(id) {
+      if (confirm('¿Eliminar movimiento?')) {
+        await supabaseClient.from('movimientos').delete().eq('id', id);
+        fetchAllData();
+      }
+    }
+
+    async function deleteCredito(id) {
+      if (confirm('¿Eliminar este crédito?')) {
+        await supabaseClient.from('creditos').delete().eq('id', id);
+        fetchAllData();
+      }
+    }
+
+    async function deleteCuenta(id) {
+      if (confirm('¿Eliminar esta cuenta?')) {
+        await supabaseClient.from('cuentas').delete().eq('id', id);
+        fetchAllData();
+      }
+    }
+
+    async function deleteConcepto(id) {
+      if (confirm('¿Eliminar este concepto?')) {
+        await supabaseClient.from('conceptos').delete().eq('id', id);
+        fetchAllData();
+      }
+    }
+
+    function formatMoney(val) {
+      return '$' + val.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+
+    function renderApp() {
+      const mesMovs = movimientos.filter(m => m.fecha && m.fecha.startsWith(selectedMonth));
+      
+      const ingresos = mesMovs.filter(m => m.tipo === 'ingreso').reduce((a, b) => a + parseFloat(b.monto), 0);
+      const gastos = mesMovs.filter(m => m.tipo === 'gasto' || m.tipo === 'nomina').reduce((a, b) => a + parseFloat(b.monto), 0);
+
+      const fechaCredCorte = document.getElementById('filtroFechaCredito').value || today;
+      let totalSaldoPasivos = 0;
+
+      creditosList.filter(c => c.fecha_inicio <= fechaCredCorte).forEach(c => {
+        const pagado = movimientos.filter(m => m.credito_id === c.id && m.fecha <= fechaCredCorte).reduce((a, b) => a + parseFloat(b.monto), 0);
+        totalSaldoPasivos += Math.max(0, parseFloat(c.monto_prestado) - pagado);
+      });
+
+      document.getElementById('dash-balance').innerText = formatMoney(ingresos - gastos);
+      document.getElementById('dash-ingresos').innerText = formatMoney(ingresos);
+      document.getElementById('dash-gastos').innerText = formatMoney(gastos);
+      document.getElementById('dash-deudas').innerText = formatMoney(totalSaldoPasivos);
+
+      const getNombreCuenta = (id) => {
+        const c = cuentasList.find(cu => cu.id === id);
+        return c ? c.nombre : 'General';
+      };
+
+      // Tabla Ingresos
+      document.getElementById('list-ingresos').innerHTML = mesMovs.filter(m => m.tipo === 'ingreso').map(i => `
+        <tr class="hover:bg-slate-800/40">
+          <td class="p-3.5 font-medium text-slate-100">${i.concepto}</td>
+          <td class="p-3.5"><span class="px-2 py-0.5 bg-slate-800 text-[10px] font-semibold rounded-md border border-slate-700">${i.categoria}</span></td>
+          <td class="p-3.5 text-cyan-400 font-semibold">${getNombreCuenta(i.cuenta_id)}</td>
+          <td class="p-3.5 text-slate-400">${i.fecha}</td>
+          <td class="p-3.5 text-right font-bold text-emerald-400">${formatMoney(parseFloat(i.monto))}</td>
+          <td class="p-3.5 text-center">
+            <button onclick="deleteMovimiento('${i.id}')" class="text-slate-500 hover:text-rose-400"><i class="fa-solid fa-trash-can"></i></button>
+          </td>
+        </tr>
+      `).join('') || `<tr><td colspan="6" class="p-4 text-center text-slate-500">Sin ingresos en este periodo</td></tr>`;
+
+      // Tabla Gastos / Nómina
+      document.getElementById('list-gastos').innerHTML = mesMovs.filter(m => m.tipo === 'gasto' || m.tipo === 'nomina').map(g => `
+        <tr class="hover:bg-slate-800/40">
+          <td class="p-3.5 font-medium text-slate-100">${g.concepto}</td>
+          <td class="p-3.5"><span class="px-2 py-0.5 ${g.tipo === 'nomina' ? 'bg-indigo-950 text-indigo-400' : 'bg-rose-950 text-rose-400'} text-[10px] font-bold uppercase rounded-md">${g.tipo}</span></td>
+          <td class="p-3.5"><span class="px-2 py-0.5 bg-slate-800 text-[10px] font-semibold rounded-md border border-slate-700">${g.categoria}</span></td>
+          <td class="p-3.5 text-cyan-400 font-semibold">${getNombreCuenta(g.cuenta_id)}</td>
+          <td class="p-3.5 text-slate-400">${g.fecha}</td>
+          <td class="p-3.5 text-right font-bold text-rose-400">${formatMoney(parseFloat(g.monto))}</td>
+          <td class="p-3.5 text-center">
+            <button onclick="deleteMovimiento('${g.id}')" class="text-slate-500 hover:text-rose-400"><i class="fa-solid fa-trash-can"></i></button>
+          </td>
+        </tr>
+      `).join('') || `<tr><td colspan="7" class="p-4 text-center text-slate-500">Sin gastos ni nómina en este periodo</td></tr>`;
+
+      // Cuentas / Bancos
+      const fechaCueCorte = document.getElementById('filtroFechaCuenta').value || today;
+      document.getElementById('grid-cuentas').innerHTML = cuentasList.map(c => {
+        const ingCuenta = movimientos.filter(m => m.cuenta_id === c.id && m.tipo === 'ingreso' && m.fecha <= fechaCueCorte).reduce((a, b) => a + parseFloat(b.monto), 0);
+        const gasCuenta = movimientos.filter(m => m.cuenta_id === c.id && (m.tipo === 'gasto' || m.tipo === 'nomina') && m.fecha <= fechaCueCorte).reduce((a, b) => a + parseFloat(b.monto), 0);
+        const saldoActual = parseFloat(c.saldo_inicial) + ingCuenta - gasCuenta;
+
+        return `
+          <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-3">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="font-bold text-slate-100 text-sm">${c.nombre}</h3>
+                <span class="text-[10px] text-cyan-400 font-semibold uppercase">${c.tipo}</span>
+              </div>
+              <button onclick="deleteCuenta('${c.id}')" class="text-slate-600 hover:text-rose-400 text-xs"><i class="fa-solid fa-trash"></i></button>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-500">Saldo al ${fechaCueCorte}</p>
+              <p class="text-xl font-extrabold ${saldoActual >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${formatMoney(saldoActual)}</p>
+            </div>
+            <div class="text-[10px] text-slate-400 flex justify-between border-t border-slate-800/80 pt-2">
+              <span>Ingresos: <b class="text-emerald-400">${formatMoney(ingCuenta)}</b></span>
+              <span>Egresos: <b class="text-rose-400">${formatMoney(gasCuenta)}</b></span>
+            </div>
+          </div>
+        `;
+      }).join('') || `<p class="text-xs text-slate-500">No hay bancos o cajas registradas.</p>`;
+
+      // Créditos
+      document.getElementById('grid-creditos').innerHTML = creditosList.filter(c => c.fecha_inicio <= fechaCredCorte).map(c => {
+        const valorPagado = movimientos.filter(m => m.credito_id === c.id && m.fecha <= fechaCredCorte).reduce((a, b) => a + parseFloat(b.monto), 0);
+        const saldoActual = Math.max(0, parseFloat(c.monto_prestado) - valorPagado);
+        const pct = Math.min(100, Math.round((valorPagado / parseFloat(c.monto_prestado)) * 100));
+
+        return `
+          <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-3">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="px-2 py-0.5 bg-amber-950 text-amber-400 text-[10px] font-bold rounded-md uppercase">Crédito #${c.numero_credito}</span>
+                <h3 class="font-bold text-slate-100 text-sm mt-1">${c.entidad_acreedor}</h3>
+                <span class="text-[10px] text-slate-500">${c.tipo === 'financiera' ? 'Entidad Financiera' : 'Préstamo Personal'}</span>
+              </div>
+              <button onclick="deleteCredito('${c.id}')" class="text-slate-600 hover:text-rose-400 text-xs"><i class="fa-solid fa-trash"></i></button>
+            </div>
+            <div class="space-y-1.5 border-t border-slate-800 pt-2">
+              <div class="flex justify-between text-xs">
+                <span class="text-slate-400">Valor Prestado:</span>
+                <span class="font-semibold text-slate-200">${formatMoney(parseFloat(c.monto_prestado))}</span>
+              </div>
+              <div class="flex justify-between text-xs">
+                <span class="text-slate-400">Valor Pagado:</span>
+                <span class="font-semibold text-emerald-400">${formatMoney(valorPagado)}</span>
+              </div>
+              <div class="flex justify-between text-xs">
+                <span class="text-slate-400">Saldo al ${fechaCredCorte}:</span>
+                <span class="font-extrabold text-amber-400">${formatMoney(saldoActual)}</span>
+              </div>
+            </div>
+            <div class="space-y-1">
+              <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden border border-slate-700">
+                <div class="bg-emerald-500 h-full" style="width: ${pct}%"></div>
+              </div>
+              <div class="text-right text-[10px] text-slate-400 font-medium">${pct}% amortizado</div>
+            </div>
+          </div>
+        `;
+      }).join('') || `<p class="text-xs text-slate-500">No hay créditos o pasivos registrados a la fecha.</p>`;
+
+      // Parametrización
+      document.getElementById('list-conceptos-param').innerHTML = conceptosList.map(c => `
+        <tr class="hover:bg-slate-800/40">
+          <td class="p-3.5 font-bold text-slate-100">${c.nombre}</td>
+          <td class="p-3.5">
+            <span class="px-2 py-0.5 ${c.tipo === 'ingreso' ? 'bg-emerald-950 text-emerald-400' : c.tipo === 'nomina' ? 'bg-indigo-950 text-indigo-400' : 'bg-rose-950 text-rose-400'} text-[10px] font-bold uppercase rounded-md">
+              ${c.tipo}
+            </span>
+          </td>
+          <td class="p-3.5 text-slate-400">${c.categoria}</td>
+          <td class="p-3.5 text-center">
+            <button onclick="deleteConcepto('${c.id}')" class="text-slate-500 hover:text-rose-400"><i class="fa-solid fa-trash-can"></i></button>
+          </td>
+        </tr>
+      `).join('') || `<tr><td colspan="4" class="p-4 text-center text-slate-500">No hay conceptos parametrizados</td></tr>`;
+
+      renderChart(ingresos, gastos);
+    }
+
+    function renderChart(ing, gas) {
+      if (chartComp) chartComp.destroy();
+      const ctx = document.getElementById('chartComparison').getContext('2d');
+      chartComp = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Ingresos', 'Gastos / Nómina'],
+          datasets: [{ data: [ing, gas], backgroundColor: ['#10b981', '#f43f5e'], borderRadius: 8 }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } }, x: { ticks: { color: '#64748b' }, grid: { display: false } } }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
