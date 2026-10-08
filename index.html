@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema Profesional de Gestión Financiera</title>
+  <title>FinanzasPro - Dashboard Empresarial</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -24,635 +24,313 @@
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
     @media print {
-      header, nav, .no-print { display: none !important; }
+      .no-print { display: none !important; }
       body { background: white !important; color: black !important; }
       .print-card { border: 1px solid #ccc !important; background: white !important; color: black !important; }
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
-  
-  <!-- Header Profesional -->
-  <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap justify-between items-center gap-4">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col md:flex-row antialiased">
+
+  <!-- PANTALLA DE LOGIN / REGISTRO -->
+  <div id="auth-screen" class="fixed inset-0 z-[100] bg-slate-950 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-md w-full shadow-2xl space-y-6">
+      <div class="text-center space-y-2">
+        <div class="inline-flex bg-gradient-to-tr from-emerald-600 to-teal-400 text-slate-950 p-3 rounded-2xl shadow-lg shadow-emerald-500/20 mb-2">
+          <i class="fa-solid fa-chart-line text-2xl font-black"></i>
+        </div>
+        <h2 id="auth-title" class="text-xl font-bold text-slate-100">Iniciar Sesión en FinanzasPro</h2>
+        <p class="text-xs text-slate-400">Ingresa tus credenciales para acceder a tu plataforma</p>
+      </div>
+
+      <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+        <div id="group-auth-name" class="hidden">
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">Nombre Completo</label>
+          <input type="text" id="auth-name" placeholder="Ej: Juan Robles" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 transition">
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">Correo Electrónico</label>
+          <input type="email" id="auth-email" required placeholder="usuario@correo.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 transition">
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">Contraseña</label>
+          <input type="password" id="auth-pass" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 transition">
+        </div>
+
+        <button type="submit" id="auth-btn" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-emerald-600/20">
+          Entrar al Sistema
+        </button>
+      </form>
+
+      <div class="text-center pt-2 border-t border-slate-800">
+        <button onclick="toggleAuthMode()" id="auth-switch-btn" class="text-xs text-emerald-400 hover:underline font-medium">
+          ¿No tienes cuenta? Regístrate aquí
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BARRA LATERAL / SIDEBAR -->
+  <aside id="sidebar" class="no-print w-full md:w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between hidden md:flex min-h-screen">
+    <div class="p-5 space-y-6">
+      <!-- Logo App -->
       <div class="flex items-center space-x-3">
         <div class="bg-gradient-to-tr from-emerald-600 to-teal-400 text-slate-950 p-2.5 rounded-xl shadow-lg shadow-emerald-500/10">
           <i class="fa-solid fa-chart-line text-lg font-black"></i>
         </div>
         <div>
-          <h1 class="text-base font-bold text-slate-100 tracking-tight">Finanzas Pro</h1>
-          <p class="text-[11px] text-slate-400 font-medium">Control Presupuestal y Pasivos</p>
+          <h1 class="text-base font-bold text-slate-100 tracking-tight">FinanzasPro</h1>
+          <p class="text-[10px] text-slate-400 font-medium">Platform v2.5</p>
         </div>
       </div>
-      
-      <!-- Selector de Periodo -->
-      <div class="flex items-center space-x-2 bg-slate-850 px-3 py-1.5 rounded-xl border border-slate-750/80 shadow-inner">
-        <i class="fa-regular fa-calendar-check text-emerald-400 text-xs"></i>
-        <span class="text-xs text-slate-400 font-medium">Periodo:</span>
-        <input type="month" id="monthSelector" onchange="changeMonth(this.value)" class="bg-transparent text-xs font-semibold text-slate-200 focus:outline-none cursor-pointer">
+
+      <!-- Menú Lateral -->
+      <nav class="space-y-1.5">
+        <button onclick="switchTab('dashboard')" id="side-dashboard" class="side-btn w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl text-emerald-400 bg-slate-800 flex items-center gap-3 transition">
+          <i class="fa-solid fa-grip w-4"></i> Dashboard
+        </button>
+        <button onclick="switchTab('ingresos')" id="side-ingresos" class="side-btn w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 hover:text-slate-200 flex items-center gap-3 transition">
+          <i class="fa-solid fa-arrow-trend-up text-emerald-400 w-4"></i> Flujo Ingresos
+        </button>
+        <button onclick="switchTab('gastos')" id="side-gastos" class="side-btn w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 hover:text-slate-200 flex items-center gap-3 transition">
+          <i class="fa-solid fa-arrow-trend-down text-rose-400 w-4"></i> Control Gastos
+        </button>
+        <button onclick="switchTab('deudas')" id="side-deudas" class="side-btn w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 hover:text-slate-200 flex items-center gap-3 transition">
+          <i class="fa-solid fa-vault text-amber-400 w-4"></i> Estr. Pasivos
+        </button>
+        <button onclick="switchTab('historico')" id="side-historico" class="side-btn w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 hover:text-slate-200 flex items-center gap-3 transition">
+          <i class="fa-solid fa-chart-column text-indigo-400 w-4"></i> Multiperiodo
+        </button>
+      </nav>
+    </div>
+
+    <!-- Perfil Usuario y Logout -->
+    <div class="p-4 border-t border-slate-800 bg-slate-900/50 space-y-3">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-emerald-400 text-xs" id="user-avatar">
+          U
+        </div>
+        <div class="overflow-hidden">
+          <h4 id="user-display-name" class="text-xs font-bold text-slate-200 truncate">Usuario</h4>
+          <p id="user-display-email" class="text-[10px] text-slate-500 truncate">correo@dominio.com</p>
+        </div>
+      </div>
+      <button onclick="logout()" class="w-full py-2 text-xs font-semibold bg-slate-800 hover:bg-rose-900/30 text-rose-400 border border-slate-700 hover:border-rose-800 rounded-xl transition flex items-center justify-center gap-2">
+        <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
+      </button>
+    </div>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <div class="flex-1 flex flex-col min-h-screen">
+
+    <!-- Header Superior -->
+    <header class="bg-slate-900 border-b border-slate-800 px-6 py-3.5 flex justify-between items-center no-print">
+      <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
+          <i class="fa-regular fa-calendar-check text-emerald-400 text-xs"></i>
+          <span class="text-xs text-slate-400 font-medium">Periodo:</span>
+          <input type="month" id="monthSelector" onchange="changeMonth(this.value)" class="bg-transparent text-xs font-semibold text-slate-200 focus:outline-none cursor-pointer">
+        </div>
       </div>
 
-      <!-- Acciones de Datos -->
-      <div class="flex items-center space-x-2 no-print">
+      <div class="flex items-center space-x-2">
         <button onclick="window.print()" class="px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-medium transition flex items-center gap-1.5 border border-slate-700">
-          <i class="fa-solid fa-print"></i> Imprimir Reporte
+          <i class="fa-solid fa-print"></i> Reporte PDF
         </button>
         <button onclick="exportData()" class="px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-medium transition flex items-center gap-1.5 border border-slate-700">
           <i class="fa-solid fa-file-export"></i> Respaldar
         </button>
         <label class="px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-medium cursor-pointer transition flex items-center gap-1.5 border border-slate-700">
-          <i class="fa-solid fa-file-import"></i> Restaurar
+          <i class="fa-solid fa-file-import"></i> Cargar
           <input type="file" id="importFile" onchange="importData(event)" class="hidden" accept=".json">
         </label>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <!-- Navegación Ejecutiva -->
-  <nav class="bg-slate-900/60 border-b border-slate-800/80 backdrop-blur-md">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 flex overflow-x-auto space-x-6">
-      <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn py-3.5 font-semibold text-xs border-b-2 border-emerald-500 text-emerald-400 flex items-center gap-2 whitespace-nowrap">
-        <i class="fa-solid fa-grip"></i> Executive Dashboard
-      </button>
-      <button onclick="switchTab('ingresos')" id="tab-ingresos" class="tab-btn py-3.5 font-semibold text-xs border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
-        <i class="fa-solid fa-arrow-trend-up text-emerald-400"></i> Flujo de Ingresos
-      </button>
-      <button onclick="switchTab('gastos')" id="tab-gastos" class="tab-btn py-3.5 font-semibold text-xs border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
-        <i class="fa-solid fa-arrow-trend-down text-rose-400"></i> Control de Gastos
-      </button>
-      <button onclick="switchTab('deudas')" id="tab-deudas" class="tab-btn py-3.5 font-semibold text-xs border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
-        <i class="fa-solid fa-vault text-amber-400"></i> Estructura de Pasivos
-      </button>
-      <button onclick="switchTab('historico')" id="tab-historico" class="tab-btn py-3.5 font-semibold text-xs border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
-        <i class="fa-solid fa-chart-column text-indigo-400"></i> Análisis Multiperiodo
-      </button>
-    </div>
-  </nav>
+    <!-- ÁREA DE PANELES -->
+    <main class="p-6 space-y-6 flex-1">
 
-  <!-- Contenedor Principal -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
+      <!-- DASHBOARD -->
+      <div id="view-dashboard" class="space-y-6">
+        <!-- Indicadores KPI -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-sm print-card">
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Balance Neto</div>
+            <div id="dash-balance" class="text-xl font-extrabold text-slate-100">$0</div>
+            <div class="text-[10px] text-slate-500 mt-1">Margen libre</div>
+          </div>
+          <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-sm print-card">
+            <div class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider mb-1">Total Ingresos</div>
+            <div id="dash-ingresos" class="text-xl font-extrabold text-emerald-400">$0</div>
+            <div class="text-[10px] text-slate-500 mt-1">Recibido este mes</div>
+          </div>
+          <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-sm print-card">
+            <div class="text-[11px] font-bold text-rose-400 uppercase tracking-wider mb-1">Total Gastos</div>
+            <div id="dash-gastos" class="text-xl font-extrabold text-rose-400">$0</div>
+            <div class="text-[10px] text-slate-500 mt-1">Egresos este mes</div>
+          </div>
+          <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-sm print-card">
+            <div class="text-[11px] font-bold text-indigo-400 uppercase tracking-wider mb-1">Tasa de Ahorro</div>
+            <div id="dash-tasa-ahorro" class="text-xl font-extrabold text-indigo-400">0%</div>
+            <div class="text-[10px] text-slate-500 mt-1">Eficiencia de caja</div>
+          </div>
+          <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-sm print-card">
+            <div class="text-[11px] font-bold text-amber-400 uppercase tracking-wider mb-1">Pasivos Totales</div>
+            <div id="dash-deudas" class="text-xl font-extrabold text-amber-400">$0</div>
+            <div class="text-[10px] text-slate-500 mt-1 flex justify-between">
+              <span>Fin: <b id="dash-deuda-fin">$0</b></span>
+              <span>Per: <b id="dash-deuda-per">$0</b></span>
+            </div>
+          </div>
+        </div>
 
-    <!-- DASHBOARD EJECUTIVO -->
-    <div id="view-dashboard" class="space-y-6">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-sm print-card">
-          <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Balance Neto</div>
-          <div id="dash-balance" class="text-xl font-extrabold text-slate-100">$0</div>
-          <div class="text-[10px] text-slate-500 mt-1">Margen disponible</div>
-        </div>
-        <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-sm print-card">
-          <div class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider mb-1">Total Ingresos</div>
-          <div id="dash-ingresos" class="text-xl font-extrabold text-emerald-400">$0</div>
-          <div class="text-[10px] text-slate-500 mt-1">Recibido este mes</div>
-        </div>
-        <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-sm print-card">
-          <div class="text-[11px] font-bold text-rose-400 uppercase tracking-wider mb-1">Total Gastos</div>
-          <div id="dash-gastos" class="text-xl font-extrabold text-rose-400">$0</div>
-          <div class="text-[10px] text-slate-500 mt-1">Egresos este mes</div>
-        </div>
-        <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-sm print-card">
-          <div class="text-[11px] font-bold text-indigo-400 uppercase tracking-wider mb-1">Tasa de Ahorro</div>
-          <div id="dash-tasa-ahorro" class="text-xl font-extrabold text-indigo-400">0%</div>
-          <div class="text-[10px] text-slate-500 mt-1">Eficiencia financiera</div>
-        </div>
-        <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-sm print-card">
-          <div class="text-[11px] font-bold text-amber-400 uppercase tracking-wider mb-1">Pasivos Totales</div>
-          <div id="dash-deudas" class="text-xl font-extrabold text-amber-400">$0</div>
-          <div class="text-[10px] text-slate-500 mt-1 flex justify-between">
-            <span>Fin: <b id="dash-deuda-fin">$0</b></span>
-            <span>Per: <b id="dash-deuda-per">$0</b></span>
+        <!-- Gráficos -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm print-card">
+            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">Flujo Financiero (Mes Actual)</h3>
+            <div class="h-64">
+              <canvas id="chartComparison"></canvas>
+            </div>
+          </div>
+          <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm print-card">
+            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">Estructura de Pasivos</h3>
+            <div class="h-64">
+              <canvas id="chartDeudas"></canvas>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- INGRESOS -->
+      <div id="view-ingresos" class="hidden space-y-4">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-base font-bold text-slate-100">Flujo de Ingresos</h2>
+            <p class="text-xs text-slate-400">Control de entradas financieras</p>
+          </div>
+          <button onclick="openModal('ingreso')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i> Registrar Ingreso
+          </button>
+        </div>
+        <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-850 text-slate-400 font-bold uppercase border-b border-slate-800">
+                <tr>
+                  <th class="p-3.5">Concepto</th>
+                  <th class="p-3.5">Categoría</th>
+                  <th class="p-3.5">Fecha</th>
+                  <th class="p-3.5 text-right">Monto</th>
+                  <th class="p-3.5 text-center no-print">Acción</th>
+                </tr>
+              </thead>
+              <tbody id="list-ingresos" class="divide-y divide-slate-800/60 text-slate-300"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- GASTOS -->
+      <div id="view-gastos" class="hidden space-y-4">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-base font-bold text-slate-100">Control de Gastos</h2>
+            <p class="text-xs text-slate-400">Egresos y salidas presupuestadas</p>
+          </div>
+          <button onclick="openModal('gasto')" class="bg-rose-600 hover:bg-rose-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i> Registrar Gasto
+          </button>
+        </div>
+        <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-850 text-slate-400 font-bold uppercase border-b border-slate-800">
+                <tr>
+                  <th class="p-3.5">Concepto</th>
+                  <th class="p-3.5">Categoría</th>
+                  <th class="p-3.5">Fecha</th>
+                  <th class="p-3.5 text-right">Monto</th>
+                  <th class="p-3.5 text-center no-print">Acción</th>
+                </tr>
+              </thead>
+              <tbody id="list-gastos" class="divide-y divide-slate-800/60 text-slate-300"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEUDAS -->
+      <div id="view-deudas" class="hidden space-y-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-base font-bold text-slate-100">Estructura de Pasivos</h2>
+            <p class="text-xs text-slate-400">Acreedores y plan de amortización</p>
+          </div>
+          <button onclick="openModal('deuda')" class="bg-amber-600 hover:bg-amber-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i> Registrar Pasivo
+          </button>
+        </div>
+
+        <div class="space-y-3">
+          <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider"><i class="fa-solid fa-building-columns mr-1"></i> Pasivos Financieros</h3>
+          <div id="list-deudas-fin" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+
+        <div class="space-y-3 pt-4 border-t border-slate-800">
+          <h3 class="text-xs font-bold text-indigo-400 uppercase tracking-wider"><i class="fa-solid fa-users mr-1"></i> Pasivos Personales</h3>
+          <div id="list-deudas-per" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+      </div>
+
+      <!-- HISTÓRICO -->
+      <div id="view-historico" class="hidden space-y-6">
+        <div>
+          <h2 class="text-base font-bold text-slate-100">Análisis Multiperiodo</h2>
+          <p class="text-xs text-slate-400">Comparativa histórica mensual</p>
+        </div>
+
         <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm print-card">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Flujo Financiero (Mes Actual)</h3>
-            <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-400">Ingresos vs Gastos</span>
-          </div>
-          <div class="h-64">
-            <canvas id="chartComparison"></canvas>
+          <div class="h-72">
+            <canvas id="chartHistory"></canvas>
           </div>
         </div>
-        <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm print-card">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Composición de Pasivos</h3>
-            <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-400">Financieros vs Personales</span>
+
+        <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-850 text-slate-400 font-bold uppercase border-b border-slate-800">
+                <tr>
+                  <th class="p-3.5">Periodo</th>
+                  <th class="p-3.5 text-right">Ingresos</th>
+                  <th class="p-3.5 text-right">Gastos</th>
+                  <th class="p-3.5 text-right">Balance</th>
+                  <th class="p-3.5 text-center no-print">Acción</th>
+                </tr>
+              </thead>
+              <tbody id="list-historico" class="divide-y divide-slate-800/60 text-slate-300"></tbody>
+            </table>
           </div>
-          <div class="h-64">
-            <canvas id="chartDeudas"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- FLUJO DE INGRESOS -->
-    <div id="view-ingresos" class="hidden space-y-4">
-      <div class="flex flex-wrap justify-between items-center gap-4">
-        <div>
-          <h2 class="text-base font-bold text-slate-100">Fuentes de Ingreso</h2>
-          <p class="text-xs text-slate-400">Gestión e historial de entradas de capital</p>
-        </div>
-        <button onclick="openModal('ingreso')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 shadow-lg shadow-emerald-600/20">
-          <i class="fa-solid fa-plus"></i> Registrar Ingreso
-        </button>
-      </div>
-
-      <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-sm">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs">
-            <thead class="bg-slate-850 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-800">
-              <tr>
-                <th class="p-3.5">Concepto / Fuente</th>
-                <th class="p-3.5">Categoría</th>
-                <th class="p-3.5">Fecha</th>
-                <th class="p-3.5 text-right">Monto</th>
-                <th class="p-3.5 text-center no-print">Acción</th>
-              </tr>
-            </thead>
-            <tbody id="list-ingresos" class="divide-y divide-slate-800/60 text-slate-300"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- CONTROL DE GASTOS -->
-    <div id="view-gastos" class="hidden space-y-4">
-      <div class="flex flex-wrap justify-between items-center gap-4">
-        <div>
-          <h2 class="text-base font-bold text-slate-100">Control de Gastos</h2>
-          <p class="text-xs text-slate-400">Monitoreo detallado de salidas y egresos</p>
-        </div>
-        <button onclick="openModal('gasto')" class="bg-rose-600 hover:bg-rose-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 shadow-lg shadow-rose-600/20">
-          <i class="fa-solid fa-plus"></i> Registrar Gasto
-        </button>
-      </div>
-
-      <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-sm">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs">
-            <thead class="bg-slate-850 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-800">
-              <tr>
-                <th class="p-3.5">Concepto</th>
-                <th class="p-3.5">Categoría</th>
-                <th class="p-3.5">Fecha</th>
-                <th class="p-3.5 text-right">Monto</th>
-                <th class="p-3.5 text-center no-print">Acción</th>
-              </tr>
-            </thead>
-            <tbody id="list-gastos" class="divide-y divide-slate-800/60 text-slate-300"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ESTRUCTURA DE PASIVOS (DEUDAS) -->
-    <div id="view-deudas" class="hidden space-y-6">
-      <div class="flex flex-wrap justify-between items-center gap-4">
-        <div>
-          <h2 class="text-base font-bold text-slate-100">Gestión Estructurada de Pasivos</h2>
-          <p class="text-xs text-slate-400">Control de acreedores, amortizaciones y abonos</p>
-        </div>
-        <button onclick="openModal('deuda')" class="bg-amber-600 hover:bg-amber-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 shadow-lg shadow-amber-600/20">
-          <i class="fa-solid fa-plus"></i> Registrar Pasivo
-        </button>
-      </div>
-
-      <!-- Deudas Financieras -->
-      <div class="space-y-3">
-        <div class="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider">
-          <i class="fa-solid fa-building-columns"></i>
-          <h3>Pasivos Financieros (Bancos, Tarjetas de Crédito, Hipotecas)</h3>
-        </div>
-        <div id="list-deudas-fin" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-      </div>
-
-      <!-- Deudas Personales -->
-      <div class="space-y-3 pt-4 border-t border-slate-800">
-        <div class="flex items-center gap-2 text-indigo-400 font-bold text-xs uppercase tracking-wider">
-          <i class="fa-solid fa-users"></i>
-          <h3>Pasivos Personales (Préstamos de Terceros, Familiares, Compromisos)</h3>
-        </div>
-        <div id="list-deudas-per" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-      </div>
-    </div>
-
-    <!-- ANÁLISIS MULTIPERIODO -->
-    <div id="view-historico" class="hidden space-y-6">
-      <div>
-        <h2 class="text-base font-bold text-slate-100">Análisis Comparativo Multiperiodo</h2>
-        <p class="text-xs text-slate-400">Evolución mensual de ingresos, gastos y capacidad de ahorro</p>
-      </div>
-
-      <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm print-card">
-        <div class="h-72">
-          <canvas id="chartHistory"></canvas>
         </div>
       </div>
 
-      <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-sm">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs">
-            <thead class="bg-slate-850 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-800">
-              <tr>
-                <th class="p-3.5">Periodo (Año-Mes)</th>
-                <th class="p-3.5 text-right">Ingresos Total</th>
-                <th class="p-3.5 text-right">Gastos Total</th>
-                <th class="p-3.5 text-right">Balance Neto</th>
-                <th class="p-3.5 text-center no-print">Navegación</th>
-              </tr>
-            </thead>
-            <tbody id="list-historico" class="divide-y divide-slate-800/60 text-slate-300"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    </main>
+  </div>
 
-  </main>
-
-  <!-- Modal Profesional -->
+  <!-- MODAL DE FORMULARIOS -->
   <div id="modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50 no-print">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
         <h3 id="modal-title" class="text-sm font-bold text-slate-100">Nuevo Registro</h3>
-        <button onclick="closeModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-base"></i></button>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-base"></i></button>
       </div>
       <form id="modal-form" onsubmit="handleFormSubmit(event)" class="space-y-4">
         <input type="hidden" id="form-type">
         <div>
-          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">Concepto / Nombre</label>
-          <input type="text" id="form-nombre" required placeholder="Ej: Honorarios, Arriendo, Crédito..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 transition">
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">Concepto</label>
+          <input type="text" id="form-nombre" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
         </div>
         <div>
           <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">Categoría</label>
-          <input type="text" id="form-categoria" placeholder="Ej: Nómina, Vivienda, Transporte..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 transition">
+          <input type="text" id="form-categoria" placeholder="Ej: Honorarios, Servicios, Tarjeta..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
         </div>
-        <div id="group-fecha">
-          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">Fecha</label>
-          <input type="date" id="form-fecha" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 transition">
-        </div>
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">Monto ($)</label>
-          <input type="number" step="0.01" id="form-monto" required placeholder="0.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 transition">
-        </div>
-        <div id="group-subtipo" class="hidden">
-          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">Tipo de Pasivo</label>
-          <select id="form-subtipo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 transition">
-            <option value="financiera">Financiero (Banco / Entidad)</option>
-            <option value="personal">Personal (Tercero / Familiar)</option>
-          </select>
-        </div>
-        <div class="flex justify-end space-x-2 pt-3 border-t border-slate-800">
-          <button type="button" onclick="closeModal()" class="px-4 py-2 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition">Cancelar</button>
-          <button type="submit" class="px-4 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl transition shadow-lg shadow-emerald-600/20">Guardar Registro</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <script>
-    const now = new Date();
-    let selectedMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    document.getElementById('monthSelector').value = selectedMonth;
-
-    let appData = JSON.parse(localStorage.getItem('finanzas_pro_data')) || {
-      ingresos: [],
-      gastos: [],
-      deudas: []
-    };
-
-    let chartComp = null, chartDeud = null, chartHist = null;
-
-    function saveData() {
-      localStorage.setItem('finanzas_pro_data', JSON.stringify(appData));
-      renderApp();
-    }
-
-    function changeMonth(val) {
-      if (!val) return;
-      selectedMonth = val;
-      renderApp();
-    }
-
-    function switchTab(tab) {
-      document.querySelectorAll('.tab-btn').forEach(b => {
-        b.classList.remove('border-emerald-500', 'text-emerald-400');
-        b.classList.add('border-transparent', 'text-slate-400');
-      });
-      document.getElementById(`tab-${tab}`).classList.add('border-emerald-500', 'text-emerald-400');
-      document.getElementById(`tab-${tab}`).classList.remove('border-transparent', 'text-slate-400');
-
-      ['dashboard', 'ingresos', 'gastos', 'deudas', 'historico'].forEach(v => {
-        document.getElementById(`view-${v}`).classList.add('hidden');
-      });
-      document.getElementById(`view-${tab}`).classList.remove('hidden');
-    }
-
-    function openModal(type) {
-      document.getElementById('form-type').value = type;
-      document.getElementById('modal-form').reset();
-      document.getElementById('form-fecha').value = `${selectedMonth}-01`;
-
-      const title = document.getElementById('modal-title');
-      const subtipoGroup = document.getElementById('group-subtipo');
-      const fechaGroup = document.getElementById('group-fecha');
-
-      if (type === 'ingreso') {
-        title.innerText = 'Nuevo Ingreso';
-        subtipoGroup.classList.add('hidden');
-        fechaGroup.classList.remove('hidden');
-      } else if (type === 'gasto') {
-        title.innerText = 'Nuevo Gasto';
-        subtipoGroup.classList.add('hidden');
-        fechaGroup.classList.remove('hidden');
-      } else if (type === 'deuda') {
-        title.innerText = 'Nuevo Pasivo / Deuda';
-        subtipoGroup.classList.remove('hidden');
-        fechaGroup.classList.add('hidden');
-      }
-
-      document.getElementById('modal').classList.remove('hidden');
-      document.getElementById('modal').classList.add('flex');
-    }
-
-    function closeModal() {
-      document.getElementById('modal').classList.add('hidden');
-      document.getElementById('modal').classList.remove('flex');
-    }
-
-    function handleFormSubmit(e) {
-      e.preventDefault();
-      const type = document.getElementById('form-type').value;
-      const nombre = document.getElementById('form-nombre').value;
-      const categoria = document.getElementById('form-categoria').value || 'General';
-      const monto = parseFloat(document.getElementById('form-monto').value) || 0;
-      const fecha = document.getElementById('form-fecha').value;
-
-      if (type === 'ingreso') {
-        appData.ingresos.push({ id: Date.now(), nombre, categoria, monto, fecha });
-      } else if (type === 'gasto') {
-        appData.gastos.push({ id: Date.now(), nombre, categoria, monto, fecha });
-      } else if (type === 'deuda') {
-        appData.deudas.push({
-          id: Date.now(),
-          nombre,
-          categoria,
-          montoOriginal: monto,
-          saldoPendiente: monto,
-          tipo: document.getElementById('form-subtipo').value
-        });
-      }
-
-      closeModal();
-      saveData();
-    }
-
-    function deleteItem(type, id) {
-      if (confirm('¿Desea eliminar este registro permanentemente?')) {
-        appData[type] = appData[type].filter(item => item.id !== id);
-        saveData();
-      }
-    }
-
-    function abonarDeuda(id) {
-      const deuda = appData.deudas.find(d => d.id === id);
-      if (!deuda) return;
-
-      const abonoStr = prompt(`Saldo pendiente de "${deuda.nombre}": $${deuda.saldoPendiente}\nIngrese el monto a abonar:`);
-      if (abonoStr) {
-        const abono = parseFloat(abonoStr);
-        if (!isNaN(abono) && abono > 0) {
-          deuda.saldoPendiente = Math.max(0, deuda.saldoPendiente - abono);
-          saveData();
-        }
-      }
-    }
-
-    function formatMoney(val) {
-      return '$' + val.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-    }
-
-    function renderApp() {
-      const ingresosMes = appData.ingresos.filter(i => i.fecha && i.fecha.startsWith(selectedMonth));
-      const gastosMes = appData.gastos.filter(g => g.fecha && g.fecha.startsWith(selectedMonth));
-
-      const totalIngresos = ingresosMes.reduce((acc, i) => acc + i.monto, 0);
-      const totalGastos = gastosMes.reduce((acc, g) => acc + g.monto, 0);
-      const balance = totalIngresos - totalGastos;
-      const tasaAhorro = totalIngresos > 0 ? Math.max(0, Math.round((balance / totalIngresos) * 100)) : 0;
-
-      const totalDeudaFin = appData.deudas.filter(d => d.tipo === 'financiera').reduce((acc, d) => acc + d.saldoPendiente, 0);
-      const totalDeudaPer = appData.deudas.filter(d => d.tipo === 'personal').reduce((acc, d) => acc + d.saldoPendiente, 0);
-      const totalDeudas = totalDeudaFin + totalDeudaPer;
-
-      document.getElementById('dash-balance').innerText = formatMoney(balance);
-      document.getElementById('dash-ingresos').innerText = formatMoney(totalIngresos);
-      document.getElementById('dash-gastos').innerText = formatMoney(totalGastos);
-      document.getElementById('dash-tasa-ahorro').innerText = `${tasaAhorro}%`;
-      document.getElementById('dash-deudas').innerText = formatMoney(totalDeudas);
-      document.getElementById('dash-deuda-fin').innerText = formatMoney(totalDeudaFin);
-      document.getElementById('dash-deuda-per').innerText = formatMoney(totalDeudaPer);
-
-      // Tabla Ingresos
-      document.getElementById('list-ingresos').innerHTML = ingresosMes.map(i => `
-        <tr class="hover:bg-slate-800/40">
-          <td class="p-3.5 font-medium text-slate-100">${i.nombre}</td>
-          <td class="p-3.5"><span class="px-2 py-0.5 bg-slate-800 text-[10px] font-semibold rounded-md border border-slate-700">${i.categoria}</span></td>
-          <td class="p-3.5 text-slate-400">${i.fecha}</td>
-          <td class="p-3.5 text-right font-bold text-emerald-400">${formatMoney(i.monto)}</td>
-          <td class="p-3.5 text-center no-print">
-            <button onclick="deleteItem('ingresos', ${i.id})" class="text-slate-500 hover:text-rose-400"><i class="fa-solid fa-trash-can"></i></button>
-          </td>
-        </tr>
-      `).join('') || `<tr><td colspan="5" class="p-4 text-center text-slate-500">Sin registros de ingreso para este periodo</td></tr>`;
-
-      // Tabla Gastos
-      document.getElementById('list-gastos').innerHTML = gastosMes.map(g => `
-        <tr class="hover:bg-slate-800/40">
-          <td class="p-3.5 font-medium text-slate-100">${g.nombre}</td>
-          <td class="p-3.5"><span class="px-2 py-0.5 bg-slate-800 text-[10px] font-semibold rounded-md border border-slate-700">${g.categoria}</span></td>
-          <td class="p-3.5 text-slate-400">${g.fecha}</td>
-          <td class="p-3.5 text-right font-bold text-rose-400">${formatMoney(g.monto)}</td>
-          <td class="p-3.5 text-center no-print">
-            <button onclick="deleteItem('gastos', ${g.id})" class="text-slate-500 hover:text-rose-400"><i class="fa-solid fa-trash-can"></i></button>
-          </td>
-        </tr>
-      `).join('') || `<tr><td colspan="5" class="p-4 text-center text-slate-500">Sin registros de gasto para este periodo</td></tr>`;
-
-      // Cards Deudas
-      const renderDeudaCard = (d) => {
-        const pct = Math.min(100, Math.round(((d.montoOriginal - d.saldoPendiente) / d.montoOriginal) * 100));
-        return `
-          <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-3 print-card">
-            <div class="flex justify-between items-start">
-              <div>
-                <h4 class="font-bold text-slate-200 text-xs">${d.nombre}</h4>
-                <span class="text-[10px] text-slate-400">${d.categoria}</span>
-              </div>
-              <button onclick="deleteItem('deudas', ${d.id})" class="text-slate-600 hover:text-rose-400 text-xs no-print"><i class="fa-solid fa-trash"></i></button>
-            </div>
-            <div class="space-y-1">
-              <div class="flex justify-between text-xs">
-                <span class="text-slate-400">Saldo Pendiente:</span>
-                <span class="font-bold text-amber-400">${formatMoney(d.saldoPendiente)}</span>
-              </div>
-              <div class="flex justify-between text-xs">
-                <span class="text-slate-400">Monto Inicial:</span>
-                <span class="text-slate-300">${formatMoney(d.montoOriginal)}</span>
-              </div>
-            </div>
-            <div class="space-y-1">
-              <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden border border-slate-700">
-                <div class="bg-emerald-500 h-full" style="width: ${pct}%"></div>
-              </div>
-              <div class="text-right text-[10px] text-slate-400 font-medium">${pct}% amortizado</div>
-            </div>
-            <button onclick="abonarDeuda(${d.id})" class="w-full py-1.5 text-xs bg-slate-800 hover:bg-slate-750 text-slate-200 rounded-lg transition font-medium border border-slate-700 no-print">
-              Registrar Abono
-            </button>
-          </div>
-        `;
-      };
-
-      document.getElementById('list-deudas-fin').innerHTML = appData.deudas.filter(d => d.tipo === 'financiera').map(renderDeudaCard).join('') || `<p class="text-xs text-slate-500">Sin pasivos financieros registrados</p>`;
-      document.getElementById('list-deudas-per').innerHTML = appData.deudas.filter(d => d.tipo === 'personal').map(renderDeudaCard).join('') || `<p class="text-xs text-slate-500">Sin pasivos personales registrados</p>`;
-
-      renderCharts(totalIngresos, totalGastos, totalDeudaFin, totalDeudaPer);
-      renderHistorico();
-    }
-
-    function renderCharts(ing, gas, dFin, dPer) {
-      if (chartComp) chartComp.destroy();
-      if (chartDeud) chartDeud.destroy();
-
-      const ctxComp = document.getElementById('chartComparison').getContext('2d');
-      chartComp = new Chart(ctxComp, {
-        type: 'bar',
-        data: {
-          labels: ['Ingresos', 'Gastos'],
-          datasets: [{
-            data: [ing, gas],
-            backgroundColor: ['#10b981', '#f43f5e'],
-            borderRadius: 8
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: '#1e293b' } },
-            x: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { display: false } }
-          }
-        }
-      });
-
-      const ctxDeud = document.getElementById('chartDeudas').getContext('2d');
-      chartDeud = new Chart(ctxDeud, {
-        type: 'doughnut',
-        data: {
-          labels: ['Pasivo Financiero', 'Pasivo Personal'],
-          datasets: [{
-            data: [dFin, dPer],
-            backgroundColor: ['#f59e0b', '#6366f1'],
-            borderWidth: 0
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } }
-        }
-      });
-    }
-
-    function renderHistorico() {
-      const mesesSet = new Set();
-      appData.ingresos.forEach(i => i.fecha && mesesSet.add(i.fecha.slice(0, 7)));
-      appData.gastos.forEach(g => g.fecha && mesesSet.add(g.fecha.slice(0, 7)));
-      const mesesList = Array.from(mesesSet).sort();
-
-      const dataIngresos = [];
-      const dataGastos = [];
-
-      const rowsHTML = mesesList.map(m => {
-        const ing = appData.ingresos.filter(i => i.fecha && i.fecha.startsWith(m)).reduce((a, b) => a + b.monto, 0);
-        const gas = appData.gastos.filter(g => g.fecha && g.fecha.startsWith(m)).reduce((a, b) => a + b.monto, 0);
-        const bal = ing - gas;
-
-        dataIngresos.push(ing);
-        dataGastos.push(gas);
-
-        return `
-          <tr class="hover:bg-slate-800/40">
-            <td class="p-3.5 font-bold text-slate-100">${m}</td>
-            <td class="p-3.5 text-right font-semibold text-emerald-400">${formatMoney(ing)}</td>
-            <td class="p-3.5 text-right font-semibold text-rose-400">${formatMoney(gas)}</td>
-            <td class="p-3.5 text-right font-bold ${bal >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${formatMoney(bal)}</td>
-            <td class="p-3.5 text-center no-print">
-              <button onclick="selectAndGo('${m}')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-[11px] font-semibold rounded-lg text-slate-300 border border-slate-700">Ir al mes</button>
-            </td>
-          </tr>
-        `;
-      }).join('');
-
-      document.getElementById('list-historico').innerHTML = rowsHTML || `<tr><td colspan="5" class="p-4 text-center text-slate-500">Sin historial registrado</td></tr>`;
-
-      if (chartHist) chartHist.destroy();
-      const ctxHist = document.getElementById('chartHistory').getContext('2d');
-      chartHist = new Chart(ctxHist, {
-        type: 'line',
-        data: {
-          labels: mesesList,
-          datasets: [
-            { label: 'Ingresos', data: dataIngresos, borderColor: '#10b981', backgroundColor: '#10b98115', fill: true, tension: 0.3 },
-            { label: 'Gastos', data: dataGastos, borderColor: '#f43f5e', backgroundColor: '#f43f5e15', fill: true, tension: 0.3 }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } },
-          scales: {
-            y: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: '#1e293b' } },
-            x: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: '#1e293b' } }
-          }
-        }
-      });
-    }
-
-    function selectAndGo(m) {
-      document.getElementById('monthSelector').value = m;
-      changeMonth(m);
-      switchTab('dashboard');
-    }
-
-    function exportData() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `finanzas_pro_backup_${new Date().toISOString().slice(0,10)}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-    }
-
-    function importData(event) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          appData = JSON.parse(e.target.result);
-          saveData();
-          alert('Base de datos restaurada correctamente.');
-        } catch (err) {
-          alert('Archivo de datos inválido.');
-        }
-      };
-      reader.readAsText(event.target.files[0]);
-    }
-
-    renderApp();
-  </script>
-</body>
-</html>
