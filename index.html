@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FinanzasPro - SaaS Multi-usuario</title>
+
+  <!-- PWA MANIFEST Y TEMA MÓVIL -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#10b981">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FinanzasPro">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -27,6 +35,27 @@
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col md:flex-row antialiased">
+
+  <!-- BOTÓN FLOTANTE PARA INSTALAR EN CELULAR -->
+  <div id="pwa-install-banner" class="hidden fixed bottom-4 right-4 left-4 md:left-auto z-[200] bg-slate-900 border border-emerald-500/50 p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-4 backdrop-blur-md">
+    <div class="flex items-center gap-3">
+      <div class="bg-emerald-500 text-slate-950 p-2.5 rounded-xl">
+        <i class="fa-solid fa-mobile-screen-button text-xl"></i>
+      </div>
+      <div>
+        <h4 class="text-xs font-bold text-slate-100">Instalar FinanzasPro</h4>
+        <p class="text-[10px] text-slate-400">Úsala como una app nativa en tu celular</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="installPWA()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-lg transition">
+        Instalar
+      </button>
+      <button onclick="closePWAOffer()" class="text-slate-500 hover:text-slate-300 p-1">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  </div>
 
   <!-- PANTALLA DE LOGIN / REGISTRO MULTI-USUARIO -->
   <div id="auth-screen" class="fixed inset-0 z-[100] bg-slate-950 flex items-center justify-center p-4">
@@ -440,7 +469,7 @@
     </div>
   </div>
 
-  <!-- SCRIPT CONEXIÓN SUPABASE EN TIEMPO REAL CON AUTENTICACIÓN -->
+  <!-- SCRIPT CONEXIÓN SUPABASE Y PWA -->
   <script>
     // CREDENCIALES CONFIGURADAS
     const SUPABASE_URL = "https://urdhohhqggsduzkssvlz.supabase.co";
@@ -464,6 +493,30 @@
     document.getElementById('monthSelector').value = selectedMonth;
     document.getElementById('filtroFechaCuenta').value = today;
     document.getElementById('filtroFechaCredito').value = today;
+
+    // LÓGICA BOTÓN FLOTANTE PWA
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('pwa-install-banner').classList.remove('hidden');
+    });
+
+    async function installPWA() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          console.log('Usuario instaló la aplicación');
+        }
+        deferredPrompt = null;
+        closePWAOffer();
+      }
+    }
+
+    function closePWAOffer() {
+      document.getElementById('pwa-install-banner').classList.add('hidden');
+    }
 
     // ESCUCHAR ESTADO DE SESIÓN
     supabaseClient.auth.onAuthStateChange((event, session) => {
