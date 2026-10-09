@@ -274,9 +274,10 @@
           </button>
         </div>
 
+        <!-- SECCIÓN 1: CONCEPTOS PARAMETRIZADOS -->
         <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
           <div class="p-4 border-b border-slate-800">
-            <h3 class="font-bold text-xs text-slate-200">Catálogo de Conceptos Parametrizados</h3>
+            <h3 class="font-bold text-xs text-slate-200">1. Catálogo de Conceptos Parametrizados</h3>
           </div>
           <table class="w-full text-left text-xs">
             <thead class="bg-slate-850 text-slate-400 font-bold uppercase border-b border-slate-800">
@@ -284,12 +285,51 @@
                 <th class="p-3.5">Nombre del Concepto</th>
                 <th class="p-3.5">Módulo / Tipo</th>
                 <th class="p-3.5">Categoría</th>
-                <th class="p-3.5 text-center">Acción</th>
+                <th class="p-3.5 text-center">Acciones</th>
               </tr>
             </thead>
             <tbody id="list-conceptos-param" class="divide-y divide-slate-800 text-slate-300"></tbody>
           </table>
         </div>
+
+        <!-- SECCIÓN 2: CUENTAS Y BANCOS REGISTRADOS -->
+        <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
+          <div class="p-4 border-b border-slate-800">
+            <h3 class="font-bold text-xs text-slate-200">2. Cuentas Bancarias y Cajas Registradas</h3>
+          </div>
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-850 text-slate-400 font-bold uppercase border-b border-slate-800">
+              <tr>
+                <th class="p-3.5">Nombre de Cuenta / Banco</th>
+                <th class="p-3.5">Tipo</th>
+                <th class="p-3.5 text-right">Saldo Inicial ($)</th>
+                <th class="p-3.5 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="list-cuentas-param" class="divide-y divide-slate-800 text-slate-300"></tbody>
+          </table>
+        </div>
+
+        <!-- SECCIÓN 3: CRÉDITOS Y PASIVOS REGISTRADOS -->
+        <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
+          <div class="p-4 border-b border-slate-800">
+            <h3 class="font-bold text-xs text-slate-200">3. Créditos y Pasivos Registrados</h3>
+          </div>
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-850 text-slate-400 font-bold uppercase border-b border-slate-800">
+              <tr>
+                <th class="p-3.5">Número de Crédito</th>
+                <th class="p-3.5">Entidad / Acreedor</th>
+                <th class="p-3.5">Tipo</th>
+                <th class="p-3.5 text-right">Monto Prestado ($)</th>
+                <th class="p-3.5">Fecha Inicio</th>
+                <th class="p-3.5 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="list-creditos-param" class="divide-y divide-slate-800 text-slate-300"></tbody>
+          </table>
+        </div>
+
       </div>
 
     </main>
@@ -373,10 +413,11 @@
   <div id="modal-cuenta" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 class="text-sm font-bold text-slate-100">Nueva Cuenta o Caja</h3>
+        <h3 id="modal-cuenta-title" class="text-sm font-bold text-slate-100">Nueva Cuenta o Caja</h3>
         <button onclick="closeModalCuenta()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <form onsubmit="handleCuentaSubmit(event)" class="space-y-4">
+        <input type="hidden" id="cuenta-id">
         <div>
           <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Nombre de Cuenta / Banco</label>
           <input type="text" id="cuenta-nombre" required placeholder="Ej: Bancolombia, Caja General, Nequi..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
@@ -403,10 +444,11 @@
   <div id="modal-credito" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 class="text-sm font-bold text-slate-100">Crear Nuevo Crédito / Pasivo</h3>
+        <h3 id="modal-credito-title" class="text-sm font-bold text-slate-100">Crear Nuevo Crédito / Pasivo</h3>
         <button onclick="closeModalCredito()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <form onsubmit="handleCreditoSubmit(event)" class="space-y-4">
+        <input type="hidden" id="credito-id">
         <div>
           <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Número de Crédito / Pagaré</label>
           <input type="text" id="credito-numero" required placeholder="Ej: CR-2026-001" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
@@ -441,10 +483,11 @@
   <div id="modal-param" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 class="text-sm font-bold text-slate-100">Parametrizar Nuevo Concepto</h3>
+        <h3 id="modal-param-title" class="text-sm font-bold text-slate-100">Parametrizar Nuevo Concepto</h3>
         <button onclick="closeModalParametro()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <form onsubmit="handleParamSubmit(event)" class="space-y-4">
+        <input type="hidden" id="param-id">
         <div>
           <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Módulo / Aplica para</label>
           <select id="param-tipo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
@@ -611,7 +654,23 @@
       document.getElementById('modal-abono').classList.remove('flex');
     }
 
-    function openModalCuenta() {
+    function openModalCuenta(id = null) {
+      if (id) {
+        const c = cuentasList.find(item => item.id === id);
+        if (c) {
+          document.getElementById('cuenta-id').value = c.id;
+          document.getElementById('cuenta-nombre').value = c.nombre;
+          document.getElementById('cuenta-tipo').value = c.tipo;
+          document.getElementById('cuenta-saldo').value = c.saldo_inicial;
+          document.getElementById('modal-cuenta-title').innerText = "Editar Cuenta o Caja";
+        }
+      } else {
+        document.getElementById('cuenta-id').value = "";
+        document.getElementById('cuenta-nombre').value = "";
+        document.getElementById('cuenta-tipo').value = "banco";
+        document.getElementById('cuenta-saldo').value = "";
+        document.getElementById('modal-cuenta-title').innerText = "Nueva Cuenta o Caja";
+      }
       document.getElementById('modal-cuenta').classList.remove('hidden');
       document.getElementById('modal-cuenta').classList.add('flex');
     }
@@ -620,8 +679,27 @@
       document.getElementById('modal-cuenta').classList.remove('flex');
     }
 
-    function openModalCredito() {
-      document.getElementById('credito-fecha').value = today;
+    function openModalCredito(id = null) {
+      if (id) {
+        const cr = creditosList.find(item => item.id === id);
+        if (cr) {
+          document.getElementById('credito-id').value = cr.id;
+          document.getElementById('credito-numero').value = cr.numero_credito;
+          document.getElementById('credito-entidad').value = cr.entidad_acreedor;
+          document.getElementById('credito-tipo').value = cr.tipo;
+          document.getElementById('credito-monto').value = cr.monto_prestado;
+          document.getElementById('credito-fecha').value = cr.fecha_inicio;
+          document.getElementById('modal-credito-title').innerText = "Editar Crédito / Pasivo";
+        }
+      } else {
+        document.getElementById('credito-id').value = "";
+        document.getElementById('credito-numero').value = "";
+        document.getElementById('credito-entidad').value = "";
+        document.getElementById('credito-tipo').value = "financiera";
+        document.getElementById('credito-monto').value = "";
+        document.getElementById('credito-fecha').value = today;
+        document.getElementById('modal-credito-title').innerText = "Crear Nuevo Crédito / Pasivo";
+      }
       document.getElementById('modal-credito').classList.remove('hidden');
       document.getElementById('modal-credito').classList.add('flex');
     }
@@ -630,7 +708,23 @@
       document.getElementById('modal-credito').classList.remove('flex');
     }
 
-    function openModalParametro() {
+    function openModalParametro(id = null) {
+      if (id) {
+        const p = conceptosList.find(item => item.id === id);
+        if (p) {
+          document.getElementById('param-id').value = p.id;
+          document.getElementById('param-tipo').value = p.tipo;
+          document.getElementById('param-nombre').value = p.nombre;
+          document.getElementById('param-categoria').value = p.categoria;
+          document.getElementById('modal-param-title').innerText = "Editar Concepto Parametrizado";
+        }
+      } else {
+        document.getElementById('param-id').value = "";
+        document.getElementById('param-tipo').value = "ingreso";
+        document.getElementById('param-nombre').value = "";
+        document.getElementById('param-categoria').value = "";
+        document.getElementById('modal-param-title').innerText = "Parametrizar Nuevo Concepto";
+      }
       document.getElementById('modal-param').classList.remove('hidden');
       document.getElementById('modal-param').classList.add('flex');
     }
@@ -719,11 +813,17 @@
 
     async function handleCuentaSubmit(e) {
       e.preventDefault();
+      const id = document.getElementById('cuenta-id').value;
       const nombre = document.getElementById('cuenta-nombre').value;
       const tipo = document.getElementById('cuenta-tipo').value;
       const saldo_inicial = parseFloat(document.getElementById('cuenta-saldo').value) || 0;
 
-      const { error } = await supabaseClient.from('cuentas').insert([{ nombre, tipo, saldo_inicial }]);
+      let error;
+      if (id) {
+        ({ error } = await supabaseClient.from('cuentas').update({ nombre, tipo, saldo_inicial }).eq('id', id));
+      } else {
+        ({ error } = await supabaseClient.from('cuentas').insert([{ nombre, tipo, saldo_inicial }]));
+      }
 
       if (error) alert("Error: " + error.message);
       else { closeModalCuenta(); fetchAllData(); }
@@ -731,15 +831,23 @@
 
     async function handleCreditoSubmit(e) {
       e.preventDefault();
+      const id = document.getElementById('credito-id').value;
       const numero_credito = document.getElementById('credito-numero').value;
       const entidad_acreedor = document.getElementById('credito-entidad').value;
       const tipo = document.getElementById('credito-tipo').value;
       const monto_prestado = parseFloat(document.getElementById('credito-monto').value) || 0;
       const fecha_inicio = document.getElementById('credito-fecha').value;
 
-      const { error } = await supabaseClient.from('creditos').insert([{
-        numero_credito, entidad_acreedor, tipo, monto_prestado, fecha_inicio
-      }]);
+      let error;
+      if (id) {
+        ({ error } = await supabaseClient.from('creditos').update({
+          numero_credito, entidad_acreedor, tipo, monto_prestado, fecha_inicio
+        }).eq('id', id));
+      } else {
+        ({ error } = await supabaseClient.from('creditos').insert([{
+          numero_credito, entidad_acreedor, tipo, monto_prestado, fecha_inicio
+        }]));
+      }
 
       if (error) alert("Error: " + error.message);
       else { closeModalCredito(); fetchAllData(); }
@@ -747,11 +855,17 @@
 
     async function handleParamSubmit(e) {
       e.preventDefault();
+      const id = document.getElementById('param-id').value;
       const tipo = document.getElementById('param-tipo').value;
       const nombre = document.getElementById('param-nombre').value;
       const categoria = document.getElementById('param-categoria').value;
 
-      const { error } = await supabaseClient.from('conceptos').insert([{ tipo, nombre, categoria }]);
+      let error;
+      if (id) {
+        ({ error } = await supabaseClient.from('conceptos').update({ tipo, nombre, categoria }).eq('id', id));
+      } else {
+        ({ error } = await supabaseClient.from('conceptos').insert([{ tipo, nombre, categoria }]));
+      }
 
       if (error) alert("Error: " + error.message);
       else { closeModalParametro(); fetchAllData(); }
@@ -910,7 +1024,7 @@
         `;
       }).join('') || `<p class="text-xs text-slate-500">No hay créditos o pasivos registrados a la fecha.</p>`;
 
-      // Parametrización
+      // TABLA 1: Parametrización Conceptos
       document.getElementById('list-conceptos-param').innerHTML = conceptosList.map(c => `
         <tr class="hover:bg-slate-800/40">
           <td class="p-3.5 font-bold text-slate-100">${c.nombre}</td>
@@ -920,11 +1034,40 @@
             </span>
           </td>
           <td class="p-3.5 text-slate-400">${c.categoria}</td>
-          <td class="p-3.5 text-center">
+          <td class="p-3.5 text-center space-x-2">
+            <button onclick="openModalParametro('${c.id}')" class="text-indigo-400 hover:text-indigo-300"><i class="fa-solid fa-pen-to-square"></i></button>
             <button onclick="deleteConcepto('${c.id}')" class="text-slate-500 hover:text-rose-400"><i class="fa-solid fa-trash-can"></i></button>
           </td>
         </tr>
       `).join('') || `<tr><td colspan="4" class="p-4 text-center text-slate-500">No hay conceptos parametrizados</td></tr>`;
+
+      // TABLA 2: Parametrización Cuentas
+      document.getElementById('list-cuentas-param').innerHTML = cuentasList.map(c => `
+        <tr class="hover:bg-slate-800/40">
+          <td class="p-3.5 font-bold text-slate-100">${c.nombre}</td>
+          <td class="p-3.5 text-cyan-400 font-semibold uppercase">${c.tipo}</td>
+          <td class="p-3.5 text-right font-bold text-slate-200">${formatMoney(parseFloat(c.saldo_inicial))}</td>
+          <td class="p-3.5 text-center space-x-2">
+            <button onclick="openModalCuenta('${c.id}')" class="text-cyan-400 hover:text-cyan-300"><i class="fa-solid fa-pen-to-square"></i></button>
+            <button onclick="deleteCuenta('${c.id}')" class="text-slate-500 hover:text-rose-400"><i class="fa-solid fa-trash-can"></i></button>
+          </td>
+        </tr>
+      `).join('') || `<tr><td colspan="4" class="p-4 text-center text-slate-500">No hay cuentas registradas</td></tr>`;
+
+      // TABLA 3: Parametrización Créditos
+      document.getElementById('list-creditos-param').innerHTML = creditosList.map(cr => `
+        <tr class="hover:bg-slate-800/40">
+          <td class="p-3.5 font-bold text-amber-400">#${cr.numero_credito}</td>
+          <td class="p-3.5 font-medium text-slate-100">${cr.entidad_acreedor}</td>
+          <td class="p-3.5 text-slate-400 uppercase">${cr.tipo}</td>
+          <td class="p-3.5 text-right font-bold text-slate-200">${formatMoney(parseFloat(cr.monto_prestado))}</td>
+          <td class="p-3.5 text-slate-400">${cr.fecha_inicio}</td>
+          <td class="p-3.5 text-center space-x-2">
+            <button onclick="openModalCredito('${cr.id}')" class="text-amber-400 hover:text-amber-300"><i class="fa-solid fa-pen-to-square"></i></button>
+            <button onclick="deleteCredito('${cr.id}')" class="text-slate-500 hover:text-rose-400"><i class="fa-solid fa-trash-can"></i></button>
+          </td>
+        </tr>
+      `).join('') || `<tr><td colspan="6" class="p-4 text-center text-slate-500">No hay créditos registrados</td></tr>`;
 
       renderChart(ingresos, gastos);
     }
