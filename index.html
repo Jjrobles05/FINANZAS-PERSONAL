@@ -295,8 +295,9 @@
         <div id="grid-creditos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
       </div>
 
-      <!-- VISTA REPORTES Y INFORMES -->
+      <!-- VISTA REPORTES Y INFORMES (GENERAL Y DETALLADO) -->
       <div id="view-reportes" class="hidden space-y-6">
+        
         <!-- BARRA DE FILTROS SUPERIOR -->
         <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex flex-wrap justify-between items-center gap-4 no-print">
           <div class="flex flex-wrap items-center gap-3">
@@ -325,64 +326,117 @@
           </div>
         </div>
 
+        <!-- SELECTOR DE PESTAÑAS: GENERAL VS DETALLADO -->
+        <div class="flex border-b border-slate-800 space-x-4 no-print">
+          <button id="subtab-general" onclick="switchReportSubtab('general')" class="pb-2 text-xs font-bold border-b-2 border-purple-500 text-purple-400 flex items-center gap-2">
+            <i class="fa-solid fa-chart-pie"></i> 1. Informe General (Consolidado)
+          </button>
+          <button id="subtab-detallado" onclick="switchReportSubtab('detallado')" class="pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2">
+            <i class="fa-solid fa-list-ul"></i> 2. Informe Detallado (Transaccional)
+          </button>
+        </div>
+
         <div id="printable-report" class="space-y-6">
           <div class="hidden print:block mb-4">
-            <h1 class="text-xl font-bold">FinanzasPro - Reporte Ejecutivo Financiero</h1>
+            <h1 class="text-xl font-bold">FinanzasPro - Reporte Financiero</h1>
             <p id="print-periodo-desc" class="text-xs text-gray-600"></p>
           </div>
 
-          <!-- KPIS REPORTES -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800">
-              <div class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-1">Ingresos Totales</div>
-              <div id="rep-kpi-ingresos" class="text-xl font-black text-emerald-400">$0</div>
+          <!-- PESTAÑA 1: INFORME GENERAL -->
+          <div id="report-subview-general" class="space-y-6">
+            <!-- KPIS REPORTES -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800">
+                <div class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-1">Ingresos Totales</div>
+                <div id="rep-kpi-ingresos" class="text-xl font-black text-emerald-400">$0</div>
+              </div>
+              <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800">
+                <div class="text-[10px] font-bold text-rose-400 uppercase tracking-wider mb-1">Egresos Totales</div>
+                <div id="rep-kpi-gastos" class="text-xl font-black text-rose-400">$0</div>
+              </div>
+              <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800">
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Resultado Neto (Utilidad)</div>
+                <div id="rep-kpi-utilidad" class="text-xl font-black text-slate-100">$0</div>
+              </div>
+              <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800">
+                <div class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider mb-1">Margen Neto %</div>
+                <div id="rep-kpi-margen" class="text-xl font-black text-cyan-400">0%</div>
+              </div>
             </div>
-            <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800">
-              <div class="text-[10px] font-bold text-rose-400 uppercase tracking-wider mb-1">Egresos Totales</div>
-              <div id="rep-kpi-gastos" class="text-xl font-black text-rose-400">$0</div>
+
+            <!-- GRÁFICOS DE REPORTES -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 no-print">
+              <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800">
+                <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">Distribución de Gastos por Categoría</h3>
+                <div class="h-56 flex justify-center">
+                  <canvas id="chartDoughnutGastos"></canvas>
+                </div>
+              </div>
+              <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800">
+                <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">Tendencia Histórica de Flujo</h3>
+                <div class="h-56">
+                  <canvas id="chartLineTrend"></canvas>
+                </div>
+              </div>
             </div>
-            <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800">
-              <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Resultado Neto (Utilidad)</div>
-              <div id="rep-kpi-utilidad" class="text-xl font-black text-slate-100">$0</div>
-            </div>
-            <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800">
-              <div class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider mb-1">Margen Neto %</div>
-              <div id="rep-kpi-margen" class="text-xl font-black text-cyan-400">0%</div>
+
+            <!-- ESTADO DE RESULTADOS (P&L) -->
+            <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
+              <div class="p-4 border-b border-slate-800">
+                <h3 class="font-bold text-xs text-slate-200 uppercase tracking-wider">Estado de Pérdidas y Ganancias (P&L Resumido)</h3>
+              </div>
+              <table class="w-full text-left text-xs">
+                <thead class="bg-slate-850 text-slate-400 font-bold uppercase border-b border-slate-800">
+                  <tr>
+                    <th class="p-3.5">Categoría / Concepto</th>
+                    <th class="p-3.5 text-right">Valor Total ($)</th>
+                    <th class="p-3.5 text-right">% sobre Ingresos</th>
+                  </tr>
+                </thead>
+                <tbody id="rep-pl-body" class="divide-y divide-slate-800 text-slate-300"></tbody>
+              </table>
             </div>
           </div>
 
-          <!-- GRÁFICOS DE REPORTES -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 no-print">
-            <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800">
-              <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">Distribución de Gastos por Categoría</h3>
-              <div class="h-56 flex justify-center">
-                <canvas id="chartDoughnutGastos"></canvas>
+          <!-- PESTAÑA 2: INFORME DETALLADO (TRANSACCIONAL) -->
+          <div id="report-subview-detallado" class="hidden space-y-4">
+            <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex flex-wrap justify-between items-center gap-3 no-print">
+              <div class="flex items-center space-x-2 w-full md:w-auto">
+                <i class="fa-solid fa-magnifying-glass text-slate-500 text-xs"></i>
+                <input type="text" id="rep-det-search" oninput="renderReportesDetallado()" placeholder="Buscar por concepto o categoría..." class="bg-slate-950 text-xs text-slate-200 px-3 py-1.5 rounded-xl border border-slate-800 w-full md:w-64 focus:outline-none">
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="text-xs text-slate-400">Filtrar Módulo:</span>
+                <select id="rep-det-tipo" onchange="renderReportesDetallado()" class="bg-slate-950 text-xs text-slate-200 px-3 py-1.5 rounded-xl border border-slate-800">
+                  <option value="todos">Todos los movimientos</option>
+                  <option value="ingreso">Solo Ingresos</option>
+                  <option value="gasto">Solo Gastos</option>
+                  <option value="nomina">Solo Nómina</option>
+                </select>
               </div>
             </div>
-            <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800">
-              <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">Tendencia Histórica de Flujo</h3>
-              <div class="h-56">
-                <canvas id="chartLineTrend"></canvas>
+
+            <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
+              <div class="p-4 border-b border-slate-800 flex justify-between items-center">
+                <h3 class="font-bold text-xs text-slate-200 uppercase tracking-wider">Libro Auxiliar de Transacciones Detalladas</h3>
+                <span class="text-xs text-slate-400">Registros encontrados: <b id="rep-det-count" class="text-purple-400">0</b></span>
               </div>
+              <table class="w-full text-left text-xs">
+                <thead class="bg-slate-850 text-slate-400 font-bold uppercase border-b border-slate-800">
+                  <tr>
+                    <th class="p-3.5">Fecha</th>
+                    <th class="p-3.5">Módulo</th>
+                    <th class="p-3.5">Concepto</th>
+                    <th class="p-3.5">Categoría</th>
+                    <th class="p-3.5">Cuenta / Banco</th>
+                    <th class="p-3.5 text-right">Monto ($)</th>
+                  </tr>
+                </thead>
+                <tbody id="rep-detallado-body" class="divide-y divide-slate-800 text-slate-300"></tbody>
+              </table>
             </div>
           </div>
 
-          <!-- ESTADO DE RESULTADOS (P&L) -->
-          <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
-            <div class="p-4 border-b border-slate-800">
-              <h3 class="font-bold text-xs text-slate-200 uppercase tracking-wider">Estado de Pérdidas y Ganancias (P&L Resumido)</h3>
-            </div>
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-850 text-slate-400 font-bold uppercase border-b border-slate-800">
-                <tr>
-                  <th class="p-3.5">Categoría / Concepto</th>
-                  <th class="p-3.5 text-right">Valor Total ($)</th>
-                  <th class="p-3.5 text-right">% sobre Ingresos</th>
-                </tr>
-              </thead>
-              <tbody id="rep-pl-body" class="divide-y divide-slate-800 text-slate-300"></tbody>
-            </table>
-          </div>
         </div>
       </div>
 
@@ -765,6 +819,20 @@
       }
     }
 
+    function switchReportSubtab(sub) {
+      document.getElementById('subtab-general').className = sub === 'general' ? 'pb-2 text-xs font-bold border-b-2 border-purple-500 text-purple-400 flex items-center gap-2' : 'pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2';
+      document.getElementById('subtab-detallado').className = sub === 'detallado' ? 'pb-2 text-xs font-bold border-b-2 border-purple-500 text-purple-400 flex items-center gap-2' : 'pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2';
+
+      if (sub === 'general') {
+        document.getElementById('report-subview-general').classList.remove('hidden');
+        document.getElementById('report-subview-detallado').classList.add('hidden');
+      } else {
+        document.getElementById('report-subview-general').classList.add('hidden');
+        document.getElementById('report-subview-detallado').classList.remove('hidden');
+        renderReportesDetallado();
+      }
+    }
+
     function openModal(defaultType = 'ingreso') {
       document.getElementById('form-tipo').value = defaultType;
       document.getElementById('form-fecha').value = `${selectedMonth}-01`;
@@ -913,7 +981,6 @@
         const { data: dataCred } = await supabaseClient.from('creditos').select('*');
         creditosList = dataCred || [];
 
-        // Llenar select filtro de cuentas en reportes
         const selectRepCue = document.getElementById('rep-cuenta-filter');
         selectRepCue.innerHTML = `<option value="todas">Todas las cuentas</option>` + cuentasList.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
 
@@ -1228,7 +1295,7 @@
       renderChart(ingresos, gastos);
     }
 
-    // LÓGICA DEL MÓDULO DE REPORTES
+    // LÓGICA DEL MÓDULO DE REPORTES GENERAL
     function renderReportes() {
       const fInicio = document.getElementById('rep-fecha-inicio').value;
       const fFin = document.getElementById('rep-fecha-fin').value;
@@ -1252,7 +1319,7 @@
       document.getElementById('rep-kpi-utilidad').className = `text-xl font-black ${utilidad >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
       document.getElementById('rep-kpi-margen').innerText = `${margen}%`;
 
-      // Generar Estado de Pérdidas y Ganancias (P&L) por categorías
+      // Estado de Pérdidas y Ganancias (P&L) por categorías
       const catMap = {};
       filteredMovs.forEach(m => {
         const key = `${m.tipo.toUpperCase()} - ${m.categoria}`;
@@ -1310,10 +1377,56 @@
       document.getElementById('rep-pl-body').innerHTML = plRows;
 
       renderReportCharts(filteredMovs);
+      renderReportesDetallado();
+    }
+
+    // LÓGICA DEL MÓDULO DE REPORTES DETALLADO (TRANSACCIONAL)
+    function renderReportesDetallado() {
+      const fInicio = document.getElementById('rep-fecha-inicio').value;
+      const fFin = document.getElementById('rep-fecha-fin').value;
+      const cuentaId = document.getElementById('rep-cuenta-filter').value;
+      const searchText = (document.getElementById('rep-det-search').value || '').toLowerCase();
+      const tipoFilter = document.getElementById('rep-det-tipo').value;
+
+      let filteredMovs = movimientos.filter(m => m.fecha >= fInicio && m.fecha <= fFin);
+      
+      if (cuentaId !== 'todas') {
+        filteredMovs = filteredMovs.filter(m => m.cuenta_id === cuentaId);
+      }
+      if (tipoFilter !== 'todos') {
+        filteredMovs = filteredMovs.filter(m => m.tipo === tipoFilter);
+      }
+      if (searchText) {
+        filteredMovs = filteredMovs.filter(m => 
+          (m.concepto && m.concepto.toLowerCase().includes(searchText)) ||
+          (m.categoria && m.categoria.toLowerCase().includes(searchText))
+        );
+      }
+
+      document.getElementById('rep-det-count').innerText = filteredMovs.length;
+
+      const getNombreCuenta = (id) => {
+        const c = cuentasList.find(cu => cu.id === id);
+        return c ? c.nombre : 'General';
+      };
+
+      document.getElementById('rep-detallado-body').innerHTML = filteredMovs.map(m => `
+        <tr class="hover:bg-slate-800/40">
+          <td class="p-3 text-slate-400 font-medium">${m.fecha}</td>
+          <td class="p-3">
+            <span class="px-2 py-0.5 ${m.tipo === 'ingreso' ? 'bg-emerald-950 text-emerald-400' : m.tipo === 'nomina' ? 'bg-indigo-950 text-indigo-400' : 'bg-rose-950 text-rose-400'} text-[10px] font-bold uppercase rounded-md">
+              ${m.tipo}
+            </span>
+          </td>
+          <td class="p-3 font-semibold text-slate-100">${m.concepto}</td>
+          <td class="p-3"><span class="px-2 py-0.5 bg-slate-800 text-[10px] font-semibold rounded-md border border-slate-700">${m.categoria}</span></td>
+          <td class="p-3 text-cyan-400 font-medium">${getNombreCuenta(m.cuenta_id)}</td>
+          <td class="p-3 text-right font-bold ${m.tipo === 'ingreso' ? 'text-emerald-400' : 'text-rose-400'}">${formatMoney(parseFloat(m.monto))}</td>
+        </tr>
+      `).join('') || `<tr><td colspan="6" class="p-4 text-center text-slate-500">No se encontraron movimientos con los filtros seleccionados.</td></tr>`;
     }
 
     function renderReportCharts(movs) {
-      // 1. Gráfico de Dona para distribución de Gastos
       const gasMovs = movs.filter(m => m.tipo === 'gasto' || m.tipo === 'nomina');
       const catGasMap = {};
       gasMovs.forEach(m => catGasMap[m.categoria] = (catGasMap[m.categoria] || 0) + parseFloat(m.monto));
@@ -1339,7 +1452,6 @@
         }
       });
 
-      // 2. Gráfico de Línea para tendencia por mes
       const monthsMap = {};
       movimientos.forEach(m => {
         if (!m.fecha) return;
@@ -1349,7 +1461,7 @@
         else monthsMap[monthKey].gas += parseFloat(m.monto);
       });
 
-      const sortedMonths = Object.keys(monthsMap).sort().slice(-6); // Últimos 6 meses
+      const sortedMonths = Object.keys(monthsMap).sort().slice(-6);
       const dataIngTrend = sortedMonths.map(k => monthsMap[k].ing);
       const dataGasTrend = sortedMonths.map(k => monthsMap[k].gas);
 
