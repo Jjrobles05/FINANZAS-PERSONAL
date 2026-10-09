@@ -32,6 +32,12 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    @media print {
+      body * { visibility: hidden; }
+      #printable-report, #printable-report * { visibility: visible; }
+      #printable-report { position: absolute; left: 0; top: 0; width: 100%; color: #000 !important; background: #fff !important; }
+      .no-print { display: none !important; }
+    }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col md:flex-row antialiased">
@@ -118,6 +124,9 @@
         </button>
         <button onclick="switchTab('deudas')" id="side-deudas" class="side-btn w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 flex items-center gap-3">
           <i class="fa-solid fa-vault text-amber-400 w-4"></i> Pasivos / Créditos
+        </button>
+        <button onclick="switchTab('reportes')" id="side-reportes" class="side-btn w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 flex items-center gap-3">
+          <i class="fa-solid fa-file-invoice-dollar text-purple-400 w-4"></i> Reportes / Informes
         </button>
         <button onclick="switchTab('parametros')" id="side-parametros" class="side-btn w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 flex items-center gap-3">
           <i class="fa-solid fa-sliders text-indigo-400 w-4"></i> Parametrización
@@ -247,7 +256,6 @@
           </div>
         </div>
 
-        <!-- TARJETA CON LA SUMA TOTAL DE BANCAS Y CAJAS EN ESTE MÓDULO -->
         <div class="bg-gradient-to-r from-cyan-950/60 to-slate-900 p-5 rounded-2xl border border-cyan-500/30 flex justify-between items-center shadow-lg">
           <div>
             <span class="text-[11px] font-bold text-cyan-400 uppercase tracking-wider">Suma Total Disponible en Cuentas y Cajas</span>
@@ -274,7 +282,6 @@
           </div>
         </div>
 
-        <!-- TARJETA CON LA SUMA TOTAL DE CRÉDITOS / DEUDAS EN ESTE MÓDULO -->
         <div class="bg-gradient-to-r from-amber-950/60 to-slate-900 p-5 rounded-2xl border border-amber-500/30 flex justify-between items-center shadow-lg">
           <div>
             <span class="text-[11px] font-bold text-amber-400 uppercase tracking-wider">Suma Total de Saldo Deudas Pendientes</span>
@@ -288,7 +295,98 @@
         <div id="grid-creditos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
       </div>
 
-      <!-- VISTA PARAMETRIZACIÓN (CATÁLOGO LIMPIO) -->
+      <!-- VISTA REPORTES Y INFORMES -->
+      <div id="view-reportes" class="hidden space-y-6">
+        <!-- BARRA DE FILTROS SUPERIOR -->
+        <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex flex-wrap justify-between items-center gap-4 no-print">
+          <div class="flex flex-wrap items-center gap-3">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Fecha Desde</label>
+              <input type="date" id="rep-fecha-inicio" onchange="renderReportes()" class="bg-slate-950 text-xs text-slate-200 px-3 py-1.5 rounded-xl border border-slate-800">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Fecha Hasta</label>
+              <input type="date" id="rep-fecha-fin" onchange="renderReportes()" class="bg-slate-950 text-xs text-slate-200 px-3 py-1.5 rounded-xl border border-slate-800">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cuenta / Banco</label>
+              <select id="rep-cuenta-filter" onchange="renderReportes()" class="bg-slate-950 text-xs text-slate-200 px-3 py-1.5 rounded-xl border border-slate-800">
+                <option value="todas">Todas las cuentas</option>
+              </select>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3.5 py-2 rounded-xl text-xs font-semibold transition border border-slate-700 flex items-center gap-2">
+              <i class="fa-solid fa-print"></i> Imprimir / PDF
+            </button>
+            <button onclick="exportReportCSV()" class="bg-purple-600 hover:bg-purple-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2">
+              <i class="fa-solid fa-file-excel"></i> Exportar CSV
+            </button>
+          </div>
+        </div>
+
+        <div id="printable-report" class="space-y-6">
+          <div class="hidden print:block mb-4">
+            <h1 class="text-xl font-bold">FinanzasPro - Reporte Ejecutivo Financiero</h1>
+            <p id="print-periodo-desc" class="text-xs text-gray-600"></p>
+          </div>
+
+          <!-- KPIS REPORTES -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800">
+              <div class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-1">Ingresos Totales</div>
+              <div id="rep-kpi-ingresos" class="text-xl font-black text-emerald-400">$0</div>
+            </div>
+            <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800">
+              <div class="text-[10px] font-bold text-rose-400 uppercase tracking-wider mb-1">Egresos Totales</div>
+              <div id="rep-kpi-gastos" class="text-xl font-black text-rose-400">$0</div>
+            </div>
+            <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800">
+              <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Resultado Neto (Utilidad)</div>
+              <div id="rep-kpi-utilidad" class="text-xl font-black text-slate-100">$0</div>
+            </div>
+            <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800">
+              <div class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider mb-1">Margen Neto %</div>
+              <div id="rep-kpi-margen" class="text-xl font-black text-cyan-400">0%</div>
+            </div>
+          </div>
+
+          <!-- GRÁFICOS DE REPORTES -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 no-print">
+            <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800">
+              <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">Distribución de Gastos por Categoría</h3>
+              <div class="h-56 flex justify-center">
+                <canvas id="chartDoughnutGastos"></canvas>
+              </div>
+            </div>
+            <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800">
+              <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">Tendencia Histórica de Flujo</h3>
+              <div class="h-56">
+                <canvas id="chartLineTrend"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- ESTADO DE RESULTADOS (P&L) -->
+          <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
+            <div class="p-4 border-b border-slate-800">
+              <h3 class="font-bold text-xs text-slate-200 uppercase tracking-wider">Estado de Pérdidas y Ganancias (P&L Resumido)</h3>
+            </div>
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-850 text-slate-400 font-bold uppercase border-b border-slate-800">
+                <tr>
+                  <th class="p-3.5">Categoría / Concepto</th>
+                  <th class="p-3.5 text-right">Valor Total ($)</th>
+                  <th class="p-3.5 text-right">% sobre Ingresos</th>
+                </tr>
+              </thead>
+              <tbody id="rep-pl-body" class="divide-y divide-slate-800 text-slate-300"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- VISTA PARAMETRIZACIÓN -->
       <div id="view-parametros" class="hidden space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button onclick="openModalParametro()" class="bg-slate-900 p-4 rounded-2xl border border-slate-800 hover:border-indigo-500 text-left transition space-y-1">
@@ -308,7 +406,6 @@
           </button>
         </div>
 
-        <!-- SECCIÓN 1: CONCEPTOS PARAMETRIZADOS -->
         <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
           <div class="p-4 border-b border-slate-800">
             <h3 class="font-bold text-xs text-slate-200">1. Catálogo de Conceptos Parametrizados</h3>
@@ -326,7 +423,6 @@
           </table>
         </div>
 
-        <!-- SECCIÓN 2: CUENTAS Y BANCOS REGISTRADOS -->
         <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
           <div class="p-4 border-b border-slate-800">
             <h3 class="font-bold text-xs text-slate-200">2. Cuentas Bancarias y Cajas Registradas</h3>
@@ -344,7 +440,6 @@
           </table>
         </div>
 
-        <!-- SECCIÓN 3: CRÉDITOS Y PASIVOS REGISTRADOS -->
         <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
           <div class="p-4 border-b border-slate-800">
             <h3 class="font-bold text-xs text-slate-200">3. Créditos y Pasivos Registrados</h3>
@@ -562,6 +657,8 @@
     let cuentasList = [];
     let creditosList = [];
     let chartComp = null;
+    let chartDoughnut = null;
+    let chartLine = null;
 
     const today = new Date().toISOString().slice(0, 10);
     const now = new Date();
@@ -570,6 +667,11 @@
     document.getElementById('monthSelector').value = selectedMonth;
     document.getElementById('filtroFechaCuenta').value = today;
     document.getElementById('filtroFechaCredito').value = today;
+
+    // Fechas por defecto para reportes (Mes en curso)
+    const firstDayMonth = `${selectedMonth}-01`;
+    document.getElementById('rep-fecha-inicio').value = firstDayMonth;
+    document.getElementById('rep-fecha-fin').value = today;
 
     // LÓGICA BOTÓN FLOTANTE PWA
     let deferredPrompt;
@@ -653,10 +755,14 @@
       });
       document.getElementById(`side-${tab}`).classList.add('bg-slate-800', 'text-emerald-400');
 
-      ['dashboard', 'ingresos', 'gastos', 'cuentas', 'deudas', 'parametros'].forEach(v => {
+      ['dashboard', 'ingresos', 'gastos', 'cuentas', 'deudas', 'reportes', 'parametros'].forEach(v => {
         document.getElementById(`view-${v}`).classList.add('hidden');
       });
       document.getElementById(`view-${tab}`).classList.remove('hidden');
+
+      if (tab === 'reportes') {
+        renderReportes();
+      }
     }
 
     function openModal(defaultType = 'ingreso') {
@@ -807,6 +913,10 @@
         const { data: dataCred } = await supabaseClient.from('creditos').select('*');
         creditosList = dataCred || [];
 
+        // Llenar select filtro de cuentas en reportes
+        const selectRepCue = document.getElementById('rep-cuenta-filter');
+        selectRepCue.innerHTML = `<option value="todas">Todas las cuentas</option>` + cuentasList.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+
         renderApp();
       } catch (err) {
         console.error("Error al leer Supabase:", err);
@@ -956,7 +1066,6 @@
       document.getElementById('dash-gastos').innerText = formatMoney(gastos);
       document.getElementById('dash-deudas').innerText = formatMoney(totalSaldoPasivos);
 
-      // Totales para encabezados de módulos de Ingresos y Gastos
       document.getElementById('total-sum-ingresos-tab').innerText = formatMoney(ingresos);
       document.getElementById('total-sum-gastos-tab').innerText = formatMoney(gastos);
 
@@ -994,7 +1103,7 @@
         </tr>
       `).join('') || `<tr><td colspan="7" class="p-4 text-center text-slate-500">Sin gastos ni nómina en este periodo</td></tr>`;
 
-      // MÓDULO BANCOS Y CAJAS: CALCULAMOS SUMA TOTAL DE SALDOS
+      // MÓDULO BANCOS Y CAJAS
       const fechaCueCorte = document.getElementById('filtroFechaCuenta').value || today;
       let sumaTotalCuentas = 0;
 
@@ -1028,7 +1137,7 @@
 
       document.getElementById('total-sum-cuentas').innerText = formatMoney(sumaTotalCuentas);
 
-      // MÓDULO CRÉDITOS Y PASIVOS: CALCULAMOS SUMA TOTAL DE SALDOS PENDIENTES
+      // MÓDULO CRÉDITOS Y PASIVOS
       let sumaTotalCreditos = 0;
       document.getElementById('grid-creditos').innerHTML = creditosList.filter(c => c.fecha_inicio <= fechaCredCorte).map(c => {
         const valorPagado = movimientos.filter(m => m.credito_id === c.id && m.fecha <= fechaCredCorte).reduce((a, b) => a + parseFloat(b.monto), 0);
@@ -1073,7 +1182,7 @@
 
       document.getElementById('total-sum-creditos').innerText = formatMoney(sumaTotalCreditos);
 
-      // TABLAS PARAMETRIZACIÓN (MANTENIENDO CATÁLOGO LIMPIO)
+      // TABLAS PARAMETRIZACIÓN
       document.getElementById('list-conceptos-param').innerHTML = conceptosList.map(c => `
         <tr class="hover:bg-slate-800/40">
           <td class="p-3.5 font-bold text-slate-100">${c.nombre}</td>
@@ -1117,6 +1226,173 @@
       `).join('') || `<tr><td colspan="6" class="p-4 text-center text-slate-500">No hay créditos registrados</td></tr>`;
 
       renderChart(ingresos, gastos);
+    }
+
+    // LÓGICA DEL MÓDULO DE REPORTES
+    function renderReportes() {
+      const fInicio = document.getElementById('rep-fecha-inicio').value;
+      const fFin = document.getElementById('rep-fecha-fin').value;
+      const cuentaId = document.getElementById('rep-cuenta-filter').value;
+
+      document.getElementById('print-periodo-desc').innerText = `Rango del Reporte: ${fInicio} al ${fFin}`;
+
+      let filteredMovs = movimientos.filter(m => m.fecha >= fInicio && m.fecha <= fFin);
+      if (cuentaId !== 'todas') {
+        filteredMovs = filteredMovs.filter(m => m.cuenta_id === cuentaId);
+      }
+
+      const totalIng = filteredMovs.filter(m => m.tipo === 'ingreso').reduce((a, b) => a + parseFloat(b.monto), 0);
+      const totalGas = filteredMovs.filter(m => m.tipo === 'gasto' || m.tipo === 'nomina').reduce((a, b) => a + parseFloat(b.monto), 0);
+      const utilidad = totalIng - totalGas;
+      const margen = totalIng > 0 ? ((utilidad / totalIng) * 100).toFixed(1) : 0;
+
+      document.getElementById('rep-kpi-ingresos').innerText = formatMoney(totalIng);
+      document.getElementById('rep-kpi-gastos').innerText = formatMoney(totalGas);
+      document.getElementById('rep-kpi-utilidad').innerText = formatMoney(utilidad);
+      document.getElementById('rep-kpi-utilidad').className = `text-xl font-black ${utilidad >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+      document.getElementById('rep-kpi-margen').innerText = `${margen}%`;
+
+      // Generar Estado de Pérdidas y Ganancias (P&L) por categorías
+      const catMap = {};
+      filteredMovs.forEach(m => {
+        const key = `${m.tipo.toUpperCase()} - ${m.categoria}`;
+        catMap[key] = (catMap[key] || 0) + parseFloat(m.monto);
+      });
+
+      let plRows = `
+        <tr class="bg-emerald-950/30 font-bold border-b border-slate-800">
+          <td class="p-3 text-emerald-400">(+) TOTAL INGRESOS</td>
+          <td class="p-3 text-right text-emerald-400">${formatMoney(totalIng)}</td>
+          <td class="p-3 text-right text-emerald-400">100%</td>
+        </tr>
+      `;
+
+      Object.keys(catMap).filter(k => k.startsWith('INGRESO')).forEach(cat => {
+        const val = catMap[cat];
+        const pct = totalIng > 0 ? ((val / totalIng) * 100).toFixed(1) : 0;
+        plRows += `
+          <tr class="hover:bg-slate-800/30">
+            <td class="p-3 pl-6 text-slate-300">• ${cat.replace('INGRESO - ', '')}</td>
+            <td class="p-3 text-right text-slate-300">${formatMoney(val)}</td>
+            <td class="p-3 text-right text-slate-400">${pct}%</td>
+          </tr>
+        `;
+      });
+
+      plRows += `
+        <tr class="bg-rose-950/30 font-bold border-b border-slate-800">
+          <td class="p-3 text-rose-400">(-) TOTAL EGRESOS Y NÓMINA</td>
+          <td class="p-3 text-right text-rose-400">${formatMoney(totalGas)}</td>
+          <td class="p-3 text-right text-rose-400">${totalIng > 0 ? ((totalGas / totalIng) * 100).toFixed(1) : 0}%</td>
+        </tr>
+      `;
+
+      Object.keys(catMap).filter(k => !k.startsWith('INGRESO')).forEach(cat => {
+        const val = catMap[cat];
+        const pct = totalIng > 0 ? ((val / totalIng) * 100).toFixed(1) : 0;
+        plRows += `
+          <tr class="hover:bg-slate-800/30">
+            <td class="p-3 pl-6 text-slate-300">• ${cat}</td>
+            <td class="p-3 text-right text-slate-300">${formatMoney(val)}</td>
+            <td class="p-3 text-right text-slate-400">${pct}%</td>
+          </tr>
+        `;
+      });
+
+      plRows += `
+        <tr class="bg-slate-800 font-extrabold border-t-2 border-slate-700 text-sm">
+          <td class="p-3.5 text-slate-100">(=) RESULTADO NETO (UTILIDAD)</td>
+          <td class="p-3.5 text-right ${utilidad >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${formatMoney(utilidad)}</td>
+          <td class="p-3.5 text-right ${utilidad >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${margen}%</td>
+        </tr>
+      `;
+
+      document.getElementById('rep-pl-body').innerHTML = plRows;
+
+      renderReportCharts(filteredMovs);
+    }
+
+    function renderReportCharts(movs) {
+      // 1. Gráfico de Dona para distribución de Gastos
+      const gasMovs = movs.filter(m => m.tipo === 'gasto' || m.tipo === 'nomina');
+      const catGasMap = {};
+      gasMovs.forEach(m => catGasMap[m.categoria] = (catGasMap[m.categoria] || 0) + parseFloat(m.monto));
+
+      const labelsDoughnut = Object.keys(catGasMap);
+      const dataDoughnut = Object.values(catGasMap);
+
+      if (chartDoughnut) chartDoughnut.destroy();
+      const ctxD = document.getElementById('chartDoughnutGastos').getContext('2d');
+      chartDoughnut = new Chart(ctxD, {
+        type: 'doughnut',
+        data: {
+          labels: labelsDoughnut.length ? labelsDoughnut : ['Sin Gastos'],
+          datasets: [{
+            data: dataDoughnut.length ? dataDoughnut : [1],
+            backgroundColor: ['#f43f5e', '#ec4899', '#a855f7', '#6366f1', '#3b82f6', '#06b6d4', '#14b8a6', '#f59e0b']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: { size: 10 } } } }
+        }
+      });
+
+      // 2. Gráfico de Línea para tendencia por mes
+      const monthsMap = {};
+      movimientos.forEach(m => {
+        if (!m.fecha) return;
+        const monthKey = m.fecha.substring(0, 7);
+        if (!monthsMap[monthKey]) monthsMap[monthKey] = { ing: 0, gas: 0 };
+        if (m.tipo === 'ingreso') monthsMap[monthKey].ing += parseFloat(m.monto);
+        else monthsMap[monthKey].gas += parseFloat(m.monto);
+      });
+
+      const sortedMonths = Object.keys(monthsMap).sort().slice(-6); // Últimos 6 meses
+      const dataIngTrend = sortedMonths.map(k => monthsMap[k].ing);
+      const dataGasTrend = sortedMonths.map(k => monthsMap[k].gas);
+
+      if (chartLine) chartLine.destroy();
+      const ctxL = document.getElementById('chartLineTrend').getContext('2d');
+      chartLine = new Chart(ctxL, {
+        type: 'line',
+        data: {
+          labels: sortedMonths,
+          datasets: [
+            { label: 'Ingresos', data: dataIngTrend, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.3 },
+            { label: 'Egresos', data: dataGasTrend, borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', fill: true, tension: 0.3 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } } },
+          scales: {
+            y: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } },
+            x: { ticks: { color: '#64748b' }, grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function exportReportCSV() {
+      const fInicio = document.getElementById('rep-fecha-inicio').value;
+      const fFin = document.getElementById('rep-fecha-fin').value;
+      let filteredMovs = movimientos.filter(m => m.fecha >= fInicio && m.fecha <= fFin);
+
+      let csvContent = "data:text/csv;charset=utf-8,ID,Fecha,Tipo,Concepto,Categoria,Monto,CuentaID\n";
+      filteredMovs.forEach(m => {
+        csvContent += `"${m.id}","${m.fecha}","${m.tipo}","${m.concepto}","${m.categoria}",${m.monto},"${m.cuenta_id}"\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `Reporte_FinanzasPro_${fInicio}_al_${fFin}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
 
     function renderChart(ing, gas) {
