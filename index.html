@@ -568,8 +568,6 @@
   </div>
 
   <!-- MODALES DE FORMULARIO -->
-  
-  <!-- MODAL TRANSACCIÓN NORMAL -->
   <div id="modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -613,7 +611,7 @@
     </div>
   </div>
 
-  <!-- NUEVO MODAL TRASLADO ENTRE CUENTAS -->
+  <!-- MODAL TRASLADO ENTRE CUENTAS -->
   <div id="modal-traslado" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -818,6 +816,15 @@
     document.getElementById('rep-fecha-inicio').value = firstDayMonth;
     document.getElementById('rep-fecha-fin').value = today;
 
+    // FORMATO MONEDA CON SEPARADORES DE MILES (PUNTOS Y COMAS)
+    function formatMoney(val) {
+      if (isNaN(val) || val === null) val = 0;
+      return '$' + new Intl.NumberFormat('es-CO', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(val);
+    }
+
     // LÓGICA BOTÓN FLOTANTE PWA
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -962,7 +969,6 @@
       document.getElementById('modal').classList.remove('flex');
     }
 
-    // FUNCIONES DEL TRASLADO ENTRE CUENTAS
     function openModalTraslado() {
       const selectOrig = document.getElementById('traslado-cuenta-origen');
       const selectDest = document.getElementById('traslado-cuenta-destino');
@@ -1141,7 +1147,6 @@
       else { closeModal(); fetchAllData(); }
     }
 
-    // MANEJADOR DEL TRASLADO ENTRE CUENTAS
     async function handleTrasladoSubmit(e) {
       e.preventDefault();
       const cOrigen = document.getElementById('traslado-cuenta-origen').value;
@@ -1157,7 +1162,6 @@
       const cueOrigObj = cuentasList.find(c => c.id === cOrigen);
       const cueDestObj = cuentasList.find(c => c.id === cDestino);
 
-      // Crear dos registros atómicos: Egreso en origen e Ingreso en destino
       const egresoRecord = {
         tipo: 'gasto',
         concepto: `Traslado a ${cueDestObj ? cueDestObj.nombre : 'Cuenta'}`,
@@ -1285,12 +1289,7 @@
       }
     }
 
-    function formatMoney(val) {
-      return '$' + val.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-    }
-
     function renderApp() {
-      // Excluimos traslados de los totales de ingresos y gastos operacionales si se desea
       const mesMovs = movimientos.filter(m => m.fecha && m.fecha.startsWith(selectedMonth));
       
       const ingresos = mesMovs.filter(m => m.tipo === 'ingreso' && m.categoria !== 'Traslado Interno').reduce((a, b) => a + parseFloat(b.monto), 0);
@@ -1624,7 +1623,6 @@
         filteredMovs = filteredMovs.filter(m => m.cuenta_id === cuentaId);
       }
 
-      // Excluimos la categoría Traslado Interno del P&L General
       const totalIng = filteredMovs.filter(m => m.tipo === 'ingreso' && m.categoria !== 'Traslado Interno').reduce((a, b) => a + parseFloat(b.monto), 0);
       const totalGas = filteredMovs.filter(m => (m.tipo === 'gasto' || m.tipo === 'nomina') && m.categoria !== 'Traslado Interno').reduce((a, b) => a + parseFloat(b.monto), 0);
       const utilidad = totalIng - totalGas;
