@@ -155,10 +155,13 @@
       </div>
 
       <div class="flex items-center space-x-2">
-        <button onclick="openModal('ingreso')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2">
+        <button onclick="openModal('ingreso')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2">
           <i class="fa-solid fa-plus"></i> Transacción
         </button>
-        <button onclick="openModalAbono()" class="bg-amber-600 hover:bg-amber-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2">
+        <button onclick="openModalTraslado()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2">
+          <i class="fa-solid fa-arrow-right-arrow-left"></i> Traslado
+        </button>
+        <button onclick="openModalAbono()" class="bg-amber-600 hover:bg-amber-500 text-white px-3 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2">
           <i class="fa-solid fa-hand-holding-dollar"></i> Abonar Crédito
         </button>
       </div>
@@ -272,7 +275,7 @@
         <div id="grid-cuentas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
       </div>
 
-      <!-- VISTA PASIVOS / CRÉDITOS CON 3 MODOS DE VISUALIZACIÓN -->
+      <!-- VISTA PASIVOS / CRÉDITOS -->
       <div id="view-deudas" class="hidden space-y-6">
         <div class="flex justify-between items-center flex-wrap gap-3">
           <div>
@@ -281,7 +284,6 @@
           </div>
           
           <div class="flex items-center space-x-3 flex-wrap gap-2">
-            <!-- BOTONES SELECTORES DE VISTA -->
             <div class="bg-slate-900 p-1 rounded-xl border border-slate-800 flex items-center space-x-1">
               <button onclick="setCreditoViewMode('grid')" id="btn-credview-grid" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1.5 transition">
                 <i class="fa-solid fa-border-all"></i> Grid
@@ -311,10 +313,10 @@
           </div>
         </div>
 
-        <!-- MODO 1: GRID -->
+        <!-- MODO GRID -->
         <div id="credito-mode-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 
-        <!-- MODO 2: LISTA -->
+        <!-- MODO LISTA -->
         <div id="credito-mode-list" class="hidden bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
           <table class="w-full text-left text-xs">
             <thead class="bg-slate-850 text-slate-400 font-bold uppercase border-b border-slate-800">
@@ -333,7 +335,7 @@
           </table>
         </div>
 
-        <!-- MODO 3: PANEL DE LECTURA -->
+        <!-- MODO LECTURA -->
         <div id="credito-mode-reading" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div class="bg-slate-900 rounded-2xl border border-slate-800 p-4 space-y-3">
             <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Selecciona un Crédito</h3>
@@ -350,7 +352,7 @@
 
       </div>
 
-      <!-- VISTA REPORTES Y INFORMES -->
+      <!-- VISTA REPORTES -->
       <div id="view-reportes" class="hidden space-y-6">
         <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex flex-wrap justify-between items-center gap-4 no-print">
           <div class="flex flex-wrap items-center gap-3">
@@ -566,6 +568,8 @@
   </div>
 
   <!-- MODALES DE FORMULARIO -->
+  
+  <!-- MODAL TRANSACCIÓN NORMAL -->
   <div id="modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -609,6 +613,41 @@
     </div>
   </div>
 
+  <!-- NUEVO MODAL TRASLADO ENTRE CUENTAS -->
+  <div id="modal-traslado" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-bold text-cyan-400 flex items-center gap-2">
+          <i class="fa-solid fa-arrow-right-arrow-left"></i> Traslado entre Cuentas
+        </h3>
+        <button onclick="closeModalTraslado()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form onsubmit="handleTrasladoSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Desde Cuenta (Origen)</label>
+          <select id="traslado-cuenta-origen" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100"></select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Hacia Cuenta (Destino)</label>
+          <select id="traslado-cuenta-destino" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100"></select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Monto a Trasladar ($)</label>
+          <input type="number" step="0.01" id="traslado-monto" required placeholder="0.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Fecha</label>
+          <input type="date" id="traslado-fecha" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
+        </div>
+        <div class="flex justify-end space-x-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeModalTraslado()" class="px-4 py-2 text-xs font-semibold bg-slate-800 text-slate-300 rounded-xl">Cancelar</button>
+          <button type="submit" class="px-4 py-2 text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl">Ejecutar Traslado</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL ABONO A CRÉDITO -->
   <div id="modal-abono" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -640,6 +679,7 @@
     </div>
   </div>
 
+  <!-- MODAL CUENTA BANCO -->
   <div id="modal-cuenta" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -671,6 +711,7 @@
     </div>
   </div>
 
+  <!-- MODAL CRÉDITO -->
   <div id="modal-credito" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -710,6 +751,7 @@
     </div>
   </div>
 
+  <!-- MODAL PARAMETRIZACIÓN -->
   <div id="modal-param" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -882,7 +924,6 @@
       }
     }
 
-    // MODOS DE VISTA EN MÓDULO CRÉDITO
     function setCreditoViewMode(mode) {
       currentCreditoViewMode = mode;
       
@@ -919,6 +960,24 @@
     function closeModal() {
       document.getElementById('modal').classList.add('hidden');
       document.getElementById('modal').classList.remove('flex');
+    }
+
+    // FUNCIONES DEL TRASLADO ENTRE CUENTAS
+    function openModalTraslado() {
+      const selectOrig = document.getElementById('traslado-cuenta-origen');
+      const selectDest = document.getElementById('traslado-cuenta-destino');
+      const options = cuentasList.map(c => `<option value="${c.id}">${c.nombre} (${c.tipo.toUpperCase()})</option>`).join('');
+      
+      selectOrig.innerHTML = options || `<option value="">Sin cuentas</option>`;
+      selectDest.innerHTML = options || `<option value="">Sin cuentas</option>`;
+
+      document.getElementById('traslado-fecha').value = today;
+      document.getElementById('modal-traslado').classList.remove('hidden');
+      document.getElementById('modal-traslado').classList.add('flex');
+    }
+    function closeModalTraslado() {
+      document.getElementById('modal-traslado').classList.add('hidden');
+      document.getElementById('modal-traslado').classList.remove('flex');
     }
 
     function openModalAbono() {
@@ -1082,6 +1141,47 @@
       else { closeModal(); fetchAllData(); }
     }
 
+    // MANEJADOR DEL TRASLADO ENTRE CUENTAS
+    async function handleTrasladoSubmit(e) {
+      e.preventDefault();
+      const cOrigen = document.getElementById('traslado-cuenta-origen').value;
+      const cDestino = document.getElementById('traslado-cuenta-destino').value;
+      const monto = parseFloat(document.getElementById('traslado-monto').value) || 0;
+      const fecha = document.getElementById('traslado-fecha').value;
+
+      if (cOrigen === cDestino) {
+        alert("La cuenta de origen y destino no pueden ser la misma.");
+        return;
+      }
+
+      const cueOrigObj = cuentasList.find(c => c.id === cOrigen);
+      const cueDestObj = cuentasList.find(c => c.id === cDestino);
+
+      // Crear dos registros atómicos: Egreso en origen e Ingreso en destino
+      const egresoRecord = {
+        tipo: 'gasto',
+        concepto: `Traslado a ${cueDestObj ? cueDestObj.nombre : 'Cuenta'}`,
+        categoria: 'Traslado Interno',
+        monto,
+        fecha,
+        cuenta_id: cOrigen
+      };
+
+      const ingresoRecord = {
+        tipo: 'ingreso',
+        concepto: `Traslado desde ${cueOrigObj ? cueOrigObj.nombre : 'Cuenta'}`,
+        categoria: 'Traslado Interno',
+        monto,
+        fecha,
+        cuenta_id: cDestino
+      };
+
+      const { error } = await supabaseClient.from('movimientos').insert([egresoRecord, ingresoRecord]);
+
+      if (error) alert("Error al realizar traslado: " + error.message);
+      else { closeModalTraslado(); fetchAllData(); }
+    }
+
     async function handleAbonoSubmit(e) {
       e.preventDefault();
       const credito_id = document.getElementById('abono-credito-id').value;
@@ -1190,10 +1290,11 @@
     }
 
     function renderApp() {
+      // Excluimos traslados de los totales de ingresos y gastos operacionales si se desea
       const mesMovs = movimientos.filter(m => m.fecha && m.fecha.startsWith(selectedMonth));
       
-      const ingresos = mesMovs.filter(m => m.tipo === 'ingreso').reduce((a, b) => a + parseFloat(b.monto), 0);
-      const gastos = mesMovs.filter(m => m.tipo === 'gasto' || m.tipo === 'nomina').reduce((a, b) => a + parseFloat(b.monto), 0);
+      const ingresos = mesMovs.filter(m => m.tipo === 'ingreso' && m.categoria !== 'Traslado Interno').reduce((a, b) => a + parseFloat(b.monto), 0);
+      const gastos = mesMovs.filter(m => (m.tipo === 'gasto' || m.tipo === 'nomina') && m.categoria !== 'Traslado Interno').reduce((a, b) => a + parseFloat(b.monto), 0);
 
       const fechaCredCorte = document.getElementById('filtroFechaCredito').value || today;
       let totalSaldoPasivos = 0;
@@ -1270,8 +1371,8 @@
               <p class="text-xl font-extrabold ${saldoActual >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${formatMoney(saldoActual)}</p>
             </div>
             <div class="text-[10px] text-slate-400 flex justify-between border-t border-slate-800/80 pt-2">
-              <span>Ingresos: <b class="text-emerald-400">${formatMoney(ingCuenta)}</b></span>
-              <span>Egresos: <b class="text-rose-400">${formatMoney(gasCuenta)}</b></span>
+              <span>Ingresos/Entradas: <b class="text-emerald-400">${formatMoney(ingCuenta)}</b></span>
+              <span>Egresos/Salidas: <b class="text-rose-400">${formatMoney(gasCuenta)}</b></span>
             </div>
           </div>
         `;
@@ -1523,8 +1624,9 @@
         filteredMovs = filteredMovs.filter(m => m.cuenta_id === cuentaId);
       }
 
-      const totalIng = filteredMovs.filter(m => m.tipo === 'ingreso').reduce((a, b) => a + parseFloat(b.monto), 0);
-      const totalGas = filteredMovs.filter(m => m.tipo === 'gasto' || m.tipo === 'nomina').reduce((a, b) => a + parseFloat(b.monto), 0);
+      // Excluimos la categoría Traslado Interno del P&L General
+      const totalIng = filteredMovs.filter(m => m.tipo === 'ingreso' && m.categoria !== 'Traslado Interno').reduce((a, b) => a + parseFloat(b.monto), 0);
+      const totalGas = filteredMovs.filter(m => (m.tipo === 'gasto' || m.tipo === 'nomina') && m.categoria !== 'Traslado Interno').reduce((a, b) => a + parseFloat(b.monto), 0);
       const utilidad = totalIng - totalGas;
       const margen = totalIng > 0 ? ((utilidad / totalIng) * 100).toFixed(1) : 0;
 
@@ -1535,14 +1637,14 @@
       document.getElementById('rep-kpi-margen').innerText = `${margen}%`;
 
       const catMap = {};
-      filteredMovs.forEach(m => {
+      filteredMovs.filter(m => m.categoria !== 'Traslado Interno').forEach(m => {
         const key = `${m.tipo.toUpperCase()} - ${m.categoria}`;
         catMap[key] = (catMap[key] || 0) + parseFloat(m.monto);
       });
 
       let plRows = `
         <tr class="bg-emerald-950/30 font-bold border-b border-slate-800">
-          <td class="p-3 text-emerald-400">(+) TOTAL INGRESOS</td>
+          <td class="p-3 text-emerald-400">(+) TOTAL INGRESOS OPERACIONALES</td>
           <td class="p-3 text-right text-emerald-400">${formatMoney(totalIng)}</td>
           <td class="p-3 text-right text-emerald-400">100%</td>
         </tr>
@@ -1641,7 +1743,7 @@
     }
 
     function renderReportCharts(movs) {
-      const gasMovs = movs.filter(m => m.tipo === 'gasto' || m.tipo === 'nomina');
+      const gasMovs = movs.filter(m => (m.tipo === 'gasto' || m.tipo === 'nomina') && m.categoria !== 'Traslado Interno');
       const catGasMap = {};
       gasMovs.forEach(m => catGasMap[m.categoria] = (catGasMap[m.categoria] || 0) + parseFloat(m.monto));
 
@@ -1667,7 +1769,7 @@
       });
 
       const monthsMap = {};
-      movimientos.forEach(m => {
+      movimientos.filter(m => m.categoria !== 'Traslado Interno').forEach(m => {
         if (!m.fecha) return;
         const monthKey = m.fecha.substring(0, 7);
         if (!monthsMap[monthKey]) monthsMap[monthKey] = { ing: 0, gas: 0 };
