@@ -351,12 +351,12 @@
         </div>
       </div>
 
-      <!-- VISTA COMPRAS CASA CON SELECCIÓN MÚLTIPLE Y PAGO CONSOLIDADO -->
+      <!-- VISTA COMPRAS CASA CON EDICIÓN DIRECTA Y PAGO CONSOLIDADO -->
       <div id="view-casa" class="hidden space-y-4">
         <div class="flex justify-between items-center flex-wrap gap-3">
           <div>
             <h2 class="text-base font-bold text-slate-100">Lista de Compras de la Casa</h2>
-            <p class="text-xs text-slate-400">Selecciona los productos uno a uno con el checkbox y presiona "Procesar Pago Seleccionado".</p>
+            <p class="text-xs text-slate-400">Puedes **editar los precios y cantidades directamente** en las casillas. Marca los productos a pagar y presiona "Procesar Pago".</p>
           </div>
           <div class="flex items-center space-x-2">
             <button onclick="openModalItemCasa()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2">
@@ -391,9 +391,9 @@
                   <input type="checkbox" id="check-all-casa" onchange="toggleSelectAllCasa(this)" class="rounded border-slate-700 text-emerald-500 focus:ring-0 cursor-pointer">
                 </th>
                 <th class="p-3.5">Concepto</th>
-                <th class="p-3.5 text-right">Precio ($)</th>
-                <th class="p-3.5 text-center">Cant. (LB/Unid)</th>
-                <th class="p-3.5 text-right">Valor a Pagar</th>
+                <th class="p-3.5 text-right w-32">Precio Unit. / LB ($)</th>
+                <th class="p-3.5 text-center w-28">Cantidad</th>
+                <th class="p-3.5 text-right">Valor Total</th>
                 <th class="p-3.5 text-center">Estado / Cuenta</th>
                 <th class="p-3.5 text-center">Acción</th>
               </tr>
@@ -669,14 +669,15 @@
     </div>
   </div>
 
-  <!-- MODAL AGREGAR ÍTEM A CASA -->
+  <!-- MODAL CREAR / EDITAR ÍTEM A CASA -->
   <div id="modal-item-casa" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 class="text-sm font-bold text-slate-100">Agregar Producto a Lista de Casa</h3>
+        <h3 id="casa-modal-title" class="text-sm font-bold text-slate-100">Agregar Producto a Lista de Casa</h3>
         <button onclick="closeModalItemCasa()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <form onsubmit="handleItemCasaSubmit(event)" class="space-y-4">
+        <input type="hidden" id="casa-item-id">
         <div>
           <label class="block text-[11px] font-semibold text-slate-400 mb-1 uppercase">Concepto / Producto</label>
           <input type="text" id="casa-concepto" required placeholder="Ej: Chuleta con Piel, Lomo, Huevos..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100">
@@ -1064,10 +1065,25 @@
       document.getElementById('modal').classList.remove('flex');
     }
 
-    function openModalItemCasa() {
-      document.getElementById('casa-concepto').value = '';
-      document.getElementById('casa-precio').value = '';
-      document.getElementById('casa-cantidad').value = '1';
+    function openModalItemCasa(id = null) {
+      if (id) {
+        const item = listaCasa.find(i => i.id === id);
+        if (item) {
+          document.getElementById('casa-item-id').value = item.id;
+          document.getElementById('casa-concepto').value = item.concepto;
+          document.getElementById('casa-precio').value = item.precio;
+          document.getElementById('casa-cantidad').value = item.cantidad;
+          document.getElementById('casa-categoria').value = item.categoria || 'General';
+          document.getElementById('casa-modal-title').innerText = "Editar Producto de Casa";
+        }
+      } else {
+        document.getElementById('casa-item-id').value = '';
+        document.getElementById('casa-concepto').value = '';
+        document.getElementById('casa-precio').value = '';
+        document.getElementById('casa-cantidad').value = '1';
+        document.getElementById('casa-categoria').value = 'Carnes';
+        document.getElementById('casa-modal-title').innerText = "Agregar Producto a Lista de Casa";
+      }
       document.getElementById('modal-item-casa').classList.remove('hidden');
       document.getElementById('modal-item-casa').classList.add('flex');
     }
@@ -1241,7 +1257,7 @@
       }
     }
 
-    // LÓGICA DE LA LISTA DE CASA / MERCADO CON SELECCIÓN MÚLTIPLE
+    // LÓGICA DE LA LISTA DE CASA / MERCADO
     async function fetchCasaData() {
       const { data, error } = await supabaseClient.from('lista_casa').select('*').order('created_at', { ascending: true });
       listaCasa = data || [];
@@ -1263,9 +1279,30 @@
                 : `<input type="checkbox" class="casa-item-check rounded border-slate-700 text-emerald-500 focus:ring-0 cursor-pointer" data-id="${item.id}" data-val="${valTotal}" onchange="calculateCasaSelectedTotal()">`
               }
             </td>
-            <td class="p-3.5 font-bold text-slate-100 ${item.comprado ? 'line-through text-slate-500' : ''}">${item.concepto}</td>
-            <td class="p-3.5 text-right text-slate-300">${formatMoney(item.precio)}</td>
-            <td class="p-3.5 text-center text-slate-300 font-semibold">${item.cantidad}</td>
+            <td class="p-3.5 font-bold text-slate-100 ${item.comprado ? 'line-through text-slate-500' : ''}">
+              ${item.concepto}
+              <span class="block text-[10px] text-slate-500 font-normal">${item.categoria || 'General'}</span>
+            </td>
+            
+            <!-- EDICIÓN DIRECTA DE PRECIO UNITARIO -->
+            <td class="p-3.5 text-right">
+              ${item.comprado 
+                ? `<span class="text-slate-400 font-semibold">${formatMoney(item.precio)}</span>`
+                : `<div class="relative flex items-center justify-end">
+                     <span class="absolute left-2 text-slate-500 text-xs">$</span>
+                     <input type="number" step="0.01" value="${item.precio}" onchange="updateItemInline('${item.id}', 'precio', this.value)" class="w-24 bg-slate-950 border border-slate-800 focus:border-emerald-500 text-right px-2 py-1 rounded-lg text-xs text-slate-100 focus:outline-none">
+                   </div>`
+              }
+            </td>
+
+            <!-- EDICIÓN DIRECTA DE CANTIDAD -->
+            <td class="p-3.5 text-center">
+              ${item.comprado 
+                ? `<span class="text-slate-400 font-semibold">${item.cantidad}</span>`
+                : `<input type="number" step="0.1" value="${item.cantidad}" onchange="updateItemInline('${item.id}', 'cantidad', this.value)" class="w-16 bg-slate-950 border border-slate-800 focus:border-emerald-500 text-center px-1.5 py-1 rounded-lg text-xs text-slate-100 focus:outline-none">`
+              }
+            </td>
+
             <td class="p-3.5 text-right font-bold text-emerald-400">${formatMoney(valTotal)}</td>
             <td class="p-3.5 text-center">
               ${item.comprado 
@@ -1275,7 +1312,8 @@
                 : `<span class="text-[10px] text-amber-400 font-semibold">Pendiente</span>`
               }
             </td>
-            <td class="p-3.5 text-center">
+            <td class="p-3.5 text-center space-x-2">
+              ${!item.comprado ? `<button onclick="openModalItemCasa('${item.id}')" class="text-indigo-400 hover:text-indigo-300 text-xs"><i class="fa-solid fa-pen-to-square"></i></button>` : ''}
               <button onclick="deleteItemCasa('${item.id}')" class="text-slate-500 hover:text-rose-400 text-xs"><i class="fa-solid fa-trash-can"></i></button>
             </td>
           </tr>
@@ -1285,6 +1323,29 @@
       document.getElementById('casa-total-val').innerText = formatMoney(totalMercado);
       document.getElementById('check-all-casa').checked = false;
       calculateCasaSelectedTotal();
+    }
+
+    // ACTUALIZACIÓN INLINE DE VALORES (PRECIO Y CANTIDAD)
+    async function updateItemInline(id, field, newValue) {
+      const val = parseFloat(newValue) || 0;
+      const item = listaCasa.find(i => i.id === id);
+      if (!item) return;
+
+      const newPrecio = field === 'precio' ? val : item.precio;
+      const newCantidad = field === 'cantidad' ? val : item.cantidad;
+      const newValorTotal = newPrecio * newCantidad;
+
+      const { error } = await supabaseClient.from('lista_casa').update({
+        precio: newPrecio,
+        cantidad: newCantidad,
+        valor_total: newValorTotal
+      }).eq('id', id);
+
+      if (error) {
+        alert("Error al actualizar valor: " + error.message);
+      } else {
+        fetchCasaData();
+      }
     }
 
     function toggleSelectAllCasa(masterCheck) {
@@ -1367,17 +1428,25 @@
 
     async function handleItemCasaSubmit(e) {
       e.preventDefault();
+      const id = document.getElementById('casa-item-id').value;
       const concepto = document.getElementById('casa-concepto').value;
       const precio = parseFloat(document.getElementById('casa-precio').value) || 0;
       const cantidad = parseFloat(document.getElementById('casa-cantidad').value) || 1;
       const categoria = document.getElementById('casa-categoria').value;
       const valor_total = precio * cantidad;
 
-      const { error } = await supabaseClient.from('lista_casa').insert([{
-        concepto, precio, cantidad, valor_total, categoria
-      }]);
+      let error;
+      if (id) {
+        ({ error } = await supabaseClient.from('lista_casa').update({
+          concepto, precio, cantidad, valor_total, categoria
+        }).eq('id', id));
+      } else {
+        ({ error } = await supabaseClient.from('lista_casa').insert([{
+          concepto, precio, cantidad, valor_total, categoria
+        }]));
+      }
 
-      if (error) alert("Error al agregar producto: " + error.message);
+      if (error) alert("Error al guardar producto: " + error.message);
       else { closeModalItemCasa(); fetchCasaData(); }
     }
 
