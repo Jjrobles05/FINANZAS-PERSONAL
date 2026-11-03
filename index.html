@@ -351,12 +351,12 @@
         </div>
       </div>
 
-      <!-- VISTA COMPRAS CASA -->
+      <!-- VISTA COMPRAS CASA CON SELECCIÓN MÚLTIPLE Y PAGO CONSOLIDADO -->
       <div id="view-casa" class="hidden space-y-4">
         <div class="flex justify-between items-center flex-wrap gap-3">
           <div>
             <h2 class="text-base font-bold text-slate-100">Lista de Compras de la Casa</h2>
-            <p class="text-xs text-slate-400">Selecciona la cuenta y presiona "Pagar" para descontar el saldo automáticamente.</p>
+            <p class="text-xs text-slate-400">Selecciona los productos uno a uno con el checkbox y presiona "Procesar Pago Seleccionado".</p>
           </div>
           <div class="flex items-center space-x-2">
             <button onclick="openModalItemCasa()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2">
@@ -365,22 +365,43 @@
           </div>
         </div>
 
+        <!-- BARRA PANEL DE PAGO MÚLTIPLE -->
+        <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex flex-wrap justify-between items-center gap-4">
+          <div class="flex items-center space-x-3">
+            <span class="text-xs text-slate-400">Descontar de:</span>
+            <select id="casa-global-cuenta" class="bg-slate-950 border border-slate-800 text-xs text-slate-200 px-3 py-1.5 rounded-xl focus:outline-none">
+            </select>
+          </div>
+          <div class="flex items-center space-x-4">
+            <div>
+              <span class="text-[10px] text-slate-400 font-bold uppercase block">Total Seleccionado:</span>
+              <span id="casa-selected-val" class="text-lg font-black text-emerald-400">$0</span>
+            </div>
+            <button onclick="procesarPagoConsolidado()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-lg shadow-emerald-600/20">
+              <i class="fa-solid fa-credit-card"></i> Procesar Pago Seleccionado
+            </button>
+          </div>
+        </div>
+
         <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
           <table class="w-full text-left text-xs">
             <thead class="bg-slate-850 text-slate-400 font-bold uppercase border-b border-slate-800">
               <tr>
+                <th class="p-3.5 text-center w-10">
+                  <input type="checkbox" id="check-all-casa" onchange="toggleSelectAllCasa(this)" class="rounded border-slate-700 text-emerald-500 focus:ring-0 cursor-pointer">
+                </th>
                 <th class="p-3.5">Concepto</th>
                 <th class="p-3.5 text-right">Precio ($)</th>
                 <th class="p-3.5 text-center">Cant. (LB/Unid)</th>
                 <th class="p-3.5 text-right">Valor a Pagar</th>
-                <th class="p-3.5 text-center">Cuenta para Débito</th>
-                <th class="p-3.5 text-center">Estado / Acción</th>
+                <th class="p-3.5 text-center">Estado / Cuenta</th>
+                <th class="p-3.5 text-center">Acción</th>
               </tr>
             </thead>
             <tbody id="list-casa-body" class="divide-y divide-slate-800 text-slate-300"></tbody>
             <tfoot class="bg-slate-900 border-t border-slate-800 font-bold">
               <tr>
-                <td colspan="3" class="p-3.5 text-slate-300 uppercase font-extrabold">Total Lista Mercado:</td>
+                <td colspan="4" class="p-3.5 text-slate-300 uppercase font-extrabold">Total General Lista Mercado:</td>
                 <td id="casa-total-val" class="p-3.5 text-right text-emerald-400 text-sm font-black">$0</td>
                 <td colspan="2"></td>
               </tr>
@@ -1210,6 +1231,9 @@
         const selectRepCue = document.getElementById('rep-cuenta-filter');
         selectRepCue.innerHTML = `<option value="todas">Todas las cuentas</option>` + cuentasList.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
 
+        const selectCasaCue = document.getElementById('casa-global-cuenta');
+        selectCasaCue.innerHTML = cuentasList.map(c => `<option value="${c.id}">${c.nombre} (${c.tipo.toUpperCase()})</option>`).join('') || `<option value="">Sin cuentas activas</option>`;
+
         renderApp();
         fetchCasaData();
       } catch (err) {
@@ -1217,7 +1241,7 @@
       }
     }
 
-    // LÓGICA DE LA LISTA DE CASA / MERCADO
+    // LÓGICA DE LA LISTA DE CASA / MERCADO CON SELECCIÓN MÚLTIPLE
     async function fetchCasaData() {
       const { data, error } = await supabaseClient.from('lista_casa').select('*').order('created_at', { ascending: true });
       listaCasa = data || [];
@@ -1226,7 +1250,6 @@
 
     function renderCasa() {
       let totalMercado = 0;
-      const optionsCuentas = cuentasList.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
 
       document.getElementById('list-casa-body').innerHTML = listaCasa.map(item => {
         const valTotal = item.precio * item.cantidad;
@@ -1234,34 +1257,112 @@
 
         return `
           <tr class="hover:bg-slate-800/40 ${item.comprado ? 'opacity-50 bg-slate-950' : ''}">
+            <td class="p-3.5 text-center">
+              ${item.comprado 
+                ? `<i class="fa-solid fa-lock text-slate-600"></i>`
+                : `<input type="checkbox" class="casa-item-check rounded border-slate-700 text-emerald-500 focus:ring-0 cursor-pointer" data-id="${item.id}" data-val="${valTotal}" onchange="calculateCasaSelectedTotal()">`
+              }
+            </td>
             <td class="p-3.5 font-bold text-slate-100 ${item.comprado ? 'line-through text-slate-500' : ''}">${item.concepto}</td>
             <td class="p-3.5 text-right text-slate-300">${formatMoney(item.precio)}</td>
             <td class="p-3.5 text-center text-slate-300 font-semibold">${item.cantidad}</td>
             <td class="p-3.5 text-right font-bold text-emerald-400">${formatMoney(valTotal)}</td>
             <td class="p-3.5 text-center">
               ${item.comprado 
-                ? `<span class="text-[10px] text-cyan-400 font-semibold">${getCuentaNombre(item.cuenta_pago_id)}</span>`
-                : `<select id="select-cuenta-${item.id}" class="bg-slate-950 border border-slate-800 text-xs rounded-lg px-2 py-1 text-slate-200">
-                    ${optionsCuentas}
-                   </select>`
+                ? `<span class="px-2.5 py-1 bg-emerald-950 text-emerald-400 border border-emerald-800 rounded-xl font-bold text-[10px]">
+                    <i class="fa-solid fa-check"></i> Pagado (${getCuentaNombre(item.cuenta_pago_id)})
+                   </span>`
+                : `<span class="text-[10px] text-amber-400 font-semibold">Pendiente</span>`
               }
             </td>
-            <td class="p-3.5 text-center space-x-2">
-              ${item.comprado 
-                ? `<span class="px-2.5 py-1 bg-emerald-950 text-emerald-400 border border-emerald-800 rounded-xl font-bold text-[10px]">
-                    <i class="fa-solid fa-check"></i> Pagado
-                   </span>`
-                : `<button onclick="pagarItemCasa('${item.id}', ${valTotal})" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition">
-                    Pagar
-                   </button>`
-              }
+            <td class="p-3.5 text-center">
               <button onclick="deleteItemCasa('${item.id}')" class="text-slate-500 hover:text-rose-400 text-xs"><i class="fa-solid fa-trash-can"></i></button>
             </td>
           </tr>
         `;
-      }).join('') || `<tr><td colspan="6" class="p-4 text-center text-slate-500">No hay productos en la lista. Haz clic en "+ Agregar Producto"</td></tr>`;
+      }).join('') || `<tr><td colspan="7" class="p-4 text-center text-slate-500">No hay productos en la lista. Haz clic en "+ Agregar Producto"</td></tr>`;
 
       document.getElementById('casa-total-val').innerText = formatMoney(totalMercado);
+      document.getElementById('check-all-casa').checked = false;
+      calculateCasaSelectedTotal();
+    }
+
+    function toggleSelectAllCasa(masterCheck) {
+      const checks = document.querySelectorAll('.casa-item-check');
+      checks.forEach(c => c.checked = masterCheck.checked);
+      calculateCasaSelectedTotal();
+    }
+
+    function calculateCasaSelectedTotal() {
+      const checks = document.querySelectorAll('.casa-item-check:checked');
+      let totalSel = 0;
+      checks.forEach(c => {
+        totalSel += parseFloat(c.getAttribute('data-val')) || 0;
+      });
+      document.getElementById('casa-selected-val').innerText = formatMoney(totalSel);
+    }
+
+    async function procesarPagoConsolidado() {
+      const checks = document.querySelectorAll('.casa-item-check:checked');
+      if (checks.length === 0) {
+        alert("Por favor selecciona al menos un producto para pagar.");
+        return;
+      }
+
+      const cuentaId = document.getElementById('casa-global-cuenta').value;
+      if (!cuentaId) {
+        alert("Por favor crea o selecciona una cuenta bancaria / caja para descontar el saldo.");
+        return;
+      }
+
+      const selectedIds = [];
+      let totalPagar = 0;
+      const conceptosNombres = [];
+
+      checks.forEach(c => {
+        const itemId = c.getAttribute('data-id');
+        const val = parseFloat(c.getAttribute('data-val')) || 0;
+        selectedIds.push(itemId);
+        totalPagar += val;
+
+        const itemObj = listaCasa.find(i => i.id === itemId);
+        if (itemObj) conceptosNombres.push(itemObj.concepto);
+      });
+
+      const confirmMsg = `¿Deseas procesar el pago único por ${formatMoney(totalPagar)} correspondiente a (${selectedIds.length}) productos seleccionados?`;
+      if (!confirm(confirmMsg)) return;
+
+      const conceptoResumido = conceptosNombres.length > 2 
+        ? `Compra Mercado: ${conceptosNombres.slice(0, 2).join(', ')} y +${conceptosNombres.length - 2} más`
+        : `Compra Mercado: ${conceptosNombres.join(', ')}`;
+
+      // 1. Insertar el egreso consolidado en finanzas
+      const { error: errMov } = await supabaseClient.from('movimientos').insert([{
+        tipo: 'gasto',
+        concepto: conceptoResumido,
+        categoria: 'Mercado / Casa',
+        monto: totalPagar,
+        fecha: new Date().toISOString().slice(0, 10),
+        cuenta_id: cuentaId
+      }]);
+
+      if (errMov) {
+        alert("Error al registrar movimiento financiero: " + errMov.message);
+        return;
+      }
+
+      // 2. Marcar todos los ítems seleccionados como comprados
+      const { error: errCasa } = await supabaseClient.from('lista_casa').update({
+        comprado: true,
+        cuenta_pago_id: cuentaId
+      }).in('id', selectedIds);
+
+      if (errCasa) {
+        alert("Error al actualizar productos: " + errCasa.message);
+      } else {
+        alert("¡Pago consolidado procesado con éxito!");
+        fetchAllData();
+      }
     }
 
     async function handleItemCasaSubmit(e) {
@@ -1278,43 +1379,6 @@
 
       if (error) alert("Error al agregar producto: " + error.message);
       else { closeModalItemCasa(); fetchCasaData(); }
-    }
-
-    async function pagarItemCasa(itemId, monto) {
-      const selectCuenta = document.getElementById(`select-cuenta-${itemId}`);
-      const cuentaId = selectCuenta ? selectCuenta.value : null;
-
-      if (!cuentaId) {
-        alert("Por favor selecciona una cuenta para descontar el saldo.");
-        return;
-      }
-
-      const itemObj = listaCasa.find(i => i.id === itemId);
-
-      const { error: errMov } = await supabaseClient.from('movimientos').insert([{
-        tipo: 'gasto',
-        concepto: `Mercado: ${itemObj.concepto}`,
-        categoria: 'Mercado / Casa',
-        monto: monto,
-        fecha: new Date().toISOString().slice(0, 10),
-        cuenta_id: cuentaId
-      }]);
-
-      if (errMov) {
-        alert("Error al registrar movimiento: " + errMov.message);
-        return;
-      }
-
-      const { error: errCasa } = await supabaseClient.from('lista_casa').update({
-        comprado: true,
-        cuenta_pago_id: cuentaId
-      }).eq('id', itemId);
-
-      if (errCasa) {
-        alert("Error al actualizar estado del producto: " + errCasa.message);
-      } else {
-        fetchAllData();
-      }
     }
 
     async function deleteItemCasa(id) {
